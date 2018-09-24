@@ -229,7 +229,7 @@ interface CellHandler {
  */
 const VIEWED_CELL_HANDLER = {
   editable: false, keydown() {}, render(value:string) {
-    const m = /^(.*)\b([01][\w-]{34,38})\b(.*)$/.exec(value);
+    const m = /^(.*)\b([01][\w-]{34,42})\b(.*)$/.exec(value);
     return m ? html`${m[1]}<a href=${hash({tableId: m[2]})}>${m[2]}</a>${m[3]}` : value;
   }
 } as CellHandler;
