@@ -1,0 +1,14 @@
+# -*- mode: gitignore; -*-
+
+# Data that should not be published
+api.key
+client.id
+
+# Non-source
+*.bak
+*debug.log
+*~
+.idea
+js
+node_modules
+package-lock.json

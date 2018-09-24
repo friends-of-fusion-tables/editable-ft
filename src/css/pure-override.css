@@ -1,0 +1,37 @@
+/* Don't wrap table headers */
+th {
+    white-space: nowrap
+}
+
+.pure-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.pure-menu-allow-hover:hover {
+    overflow: unset;
+}
+
+.pure-table td[contenteditable="true"] {
+   white-space: normal;
+}
+
+/* Don't center content */
+.content {
+    margin-left: 0
+}
+
+/* Teal background */
+#menu .pure-menu-selected, #menu .pure-menu-heading, #menu {
+    background: rgb(0, 150, 136);
+}
+
+/* Based on action button from MDL amber */
+.pure-button-primary {
+    border-radius: 4px;
+    color: rgb(66, 66, 66);
+    background-color: rgb(255, 215, 64);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
