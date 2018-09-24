@@ -17,7 +17,7 @@ the demo uses a shared API key with freebie quota.
 4.  [Install npm](https://www.npmjs.com/get-npm)
 5.  Install typescript compiler and webpack globally
 ```bash
-npm install -g typescript webpack webpack-cli
+npm install -g typescript webpack webpack-cli http-server
 ```
 6.  Update local node repository
 ```bash
@@ -28,3 +28,4 @@ npm update
 npm run build
 npm run run
 ```
+8.  Open http://localhost:8080
