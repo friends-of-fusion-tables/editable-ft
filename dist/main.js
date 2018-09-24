@@ -146,4 +146,4 @@ const b=e=>null===e||!("object"==typeof e||"function"==typeof e);class y{constru
         <div class="content" @click=${()=>R&&n()}>${t}</div>
       </div>
     </div>
-`,document.body)}const H=e=>R?e+" active":e;const D={editable:!1,keydown(){},render(e){const t=/^(.*)\b([01][\w-]{34,38})\b(.*)$/.exec(e);return t?O`${t[1]}<a href=${C({tableId:t[2]})}>${t[2]}</a>${t[3]}`:e}};var W=-1;const U=()=>F(B);U()}]);
+`,document.body)}const H=e=>R?e+" active":e;const D={editable:!1,keydown(){},render(e){const t=/^(.*)\b([01][\w-]{34,42})\b(.*)$/.exec(e);return t?O`${t[1]}<a href=${C({tableId:t[2]})}>${t[2]}</a>${t[3]}`:e}};var W=-1;const U=()=>F(B);U()}]);
