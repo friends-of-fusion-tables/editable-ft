@@ -12,8 +12,9 @@
         "purecss-onefile": "^1.0.0"
     },
     "scripts": {
-        "build": "scripts/build.sh",
-        "dev": "scripts/build.sh development",
+        "build": "scripts/build.sh main",
+        "dev": "scripts/build.sh main development",
+	"test": "cd test && ../scripts/build.sh simpleTable development",
         "run": "pgrep http-server || http-server -p 8080"
     }
 }

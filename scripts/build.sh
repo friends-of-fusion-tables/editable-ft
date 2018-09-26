@@ -4,7 +4,7 @@ set -e
 
 tsc
 
-webpack --entry $PWD/js/main.js -o dist/main.js --mode ${1:-production}
+webpack --entry $PWD/js/$1.js -o dist/$1.js --mode ${2:-production}
 
 case $(uname -s) in
     (Linux) SED=(sed -i);;
