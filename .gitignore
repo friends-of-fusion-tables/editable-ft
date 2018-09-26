@@ -9,8 +9,10 @@ client.id
 *debug.log
 *~
 .idea
+.secrets
 js
+nbproject
 node_modules
 package-lock.json
-.secrets
-/nbproject/private/
+test/dist
+test/js
