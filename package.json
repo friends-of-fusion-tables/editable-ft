@@ -1,20 +1,26 @@
 {
-    "name": "EditableFt",
-    "version": "1.0.0",
-    "keywords": [
-        "fusiontables"
-    ],
-    "author": "arl",
-    "contributors": [],
-    "dependencies": {
-        "@types/gapi.auth2": "0.0.47",
-        "lit-html": "^0.11.4",
-        "purecss-onefile": "^1.0.0"
-    },
-    "scripts": {
-        "build": "scripts/build.sh main",
-        "dev": "scripts/build.sh main development",
-	"test": "npm run dev && cd test && ../scripts/build.sh simpleTable development",
-        "run": "pgrep http-server || http-server -p 8080"
-    }
+  "name": "EditableFt",
+  "version": "1.0.0",
+  "keywords": [
+    "fusiontables"
+  ],
+  "author": "arl",
+  "contributors": [],
+  "dependencies": {
+    "@types/gapi.auth2": "0.0.47",
+    "lit-html": "^0.11.4"
+  },
+  "scripts": {
+    "build": "scripts/build.sh main",
+    "dev": "scripts/build.sh main development",
+    "test": "npm run dev && cd test && ../scripts/build.sh simpleTable development",
+    "run": "pgrep http-server || http-server -p 8080",
+    "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "lint": "tslint --project ./"
+  },
+  "devDependencies": {
+    "clang-format": "^1.2.4",
+    "tslint": "^5.9.1",
+    "typescript": "^3.1.1"
+  }
 }
