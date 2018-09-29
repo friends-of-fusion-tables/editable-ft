@@ -67,11 +67,16 @@ function viewModel(spec: PageSpec) {
     async function loadTable(tableId: string, querySuffix: string) {
       // Three or four concurrent requests
       const [table, rowResult, rowIdResult, filterValues] = await Promise.all([
-        gapi.client.fusiontables.table.get({tableId}), query('select * ' + querySuffix),
-        query('select ROWID ' + querySuffix), queryFilterValues()
+        gapi.client.fusiontables.table.get({tableId}),
+        query('select * ' + querySuffix),
+        query('select ROWID ' + querySuffix),
+        queryFilterValues()
       ]);
       drawPage(setCurrentViewModelToTable(
-          table.result, rowResult.result, rowIdResult.result, addFilter,
+          table.result,
+          rowResult.result,
+          rowIdResult.result,
+          addFilter,
           addFilter ? filterValues.result : undefined));
 
       function query(sql: string) {

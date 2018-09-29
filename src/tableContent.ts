@@ -75,7 +75,8 @@ export function tableContent(model: ViewModel) {
     const orderClass = currentPageSpec.tableId ? ['pure-menu-item'] : ['hidden'];
     const editor = getEditor(model.filterEditor);
     const menuClass = [
-      'pure-menu-item', 'pure-menu-has-children',
+      'pure-menu-item',
+      'pure-menu-has-children',
       editor ? 'pure-menu-active' : 'pure-menu-allow-hover'
     ].join(' ');
     return html` 

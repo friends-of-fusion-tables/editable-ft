@@ -58,5 +58,6 @@ const rowIdResult = {
 
 parseToCurrentPageSpec(hash({tableId: table.tableId}));
 drawPage(setCurrentViewModelToTable(
-    {result: table} as Response<Table>, {result: rowResult} as Response<Sqlresponse>,
+    {result: table} as Response<Table>,
+    {result: rowResult} as Response<Sqlresponse>,
     {result: rowIdResult} as Response<Sqlresponse>));

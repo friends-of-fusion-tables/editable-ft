@@ -62,8 +62,11 @@ export var currentViewModel = LOADING;
  * they must come from the same query.
  */
 export function setCurrentViewModelToTable(
-    {name, description, tableId}: Table, rowResponse: Sqlresponse, rowIdResponse: Sqlresponse,
-    column?: string, filterValuesResponse?: Sqlresponse) {
+    {name, description, tableId}: Table,
+    rowResponse: Sqlresponse,
+    rowIdResponse: Sqlresponse,
+    column?: string,
+    filterValuesResponse?: Sqlresponse) {
   return currentViewModel = tableViewModel();
 
   function tableViewModel() {

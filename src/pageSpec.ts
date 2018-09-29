@@ -20,7 +20,7 @@ export function whereClauses(filter?: WhereClauseSpec, except: string = '') {
   function clause(column: string) {
     const values = (filter as WhereClauseSpec)[column];
     return values.length === 1 ? `'${column}' = '${values[0]}'` :
-                                `'${column}' in (${values.map(v => `'${v}'`)})`;
+                                 `'${column}' in (${values.map(v => `'${v}'`)})`;
   }
 }
 
