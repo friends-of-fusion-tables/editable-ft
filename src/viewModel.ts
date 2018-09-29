@@ -1,18 +1,28 @@
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 import Table = gapi.client.fusiontables.Table;
-import Response = gapi.client.Response;
+import {currentPageSpec, PageSpec, hash} from "./pageSpec";
 
 /** Data and behavior backing the view. */
 export interface ViewModel {
   heading?:string;
-  menu:{item:string, link:string}[];
+  menu:{ item:string, link:string }[];
   title?:string;
   subtitle?:string;
   tableHead:string[];
   tableBody:any[][];
   onRowChanged?:(index:number) => void;
   action?:ButtonSpec;
+  editFilterLink(column:string):string;
+  filterEditor?:FilterEditorModel;
 }
+
+export interface FilterEditorModel {
+  column:string;
+  filters:Filter[];
+  onDone():void;
+}
+
+export interface Filter {value:string; selected:boolean; count:any;}
 
 export interface ButtonSpec {text:string; click:(e:Event) => void;}
 
@@ -21,7 +31,8 @@ export const BASIC_MODEL = {
   menu: [{item: 'About', link: 'https://github.com/friends-of-fusion-tables/editable-ft'},
     {item: 'Show tables', link: '#'}],
   tableHead: [],
-  tableBody: []
+  tableBody: [],
+  editFilterLink: () => '#',
 } as ViewModel;
 
 export const LOADING = {...BASIC_MODEL, subtitle: 'Loading...'} as ViewModel;
@@ -34,40 +45,73 @@ export const LOGIN = {
 
 export var currentViewModel = LOADING;
 
-export function setCurrentViewModelToTable(table:Response<Table>, rowResponse:Response<Sqlresponse>,
-    rowIdResponse:Response<Sqlresponse>) {
-  return currentViewModel = tableViewModel(table, rowResponse, rowIdResponse);
-}
-
-export function setCurrentViewModelToListing(sql:string, sqlResponse:Response<Sqlresponse>) {
-  return currentViewModel = addRows({...BASIC_MODEL, subtitle: sql} as ViewModel, sqlResponse);
-}
-
 /**
  * Returns ViewModel for loaded table, rows, and row IDs. Row IDs must correspond to the rows, i.e.,
  * they must come from the same query.
  */
-function tableViewModel(table:Response<Table>, rowResponse:Response<Sqlresponse>,
-    rowIdResponse:Response<Sqlresponse>) {
-  const {name, description, tableId} = table.result;
-  const viewModel = addRows(
-      {...BASIC_MODEL, title: name, subtitle: description, onRowChanged} as ViewModel, rowResponse);
-  return viewModel;
+export function setCurrentViewModelToTable({name, description, tableId}:Table,
+    rowResponse:Sqlresponse, rowIdResponse:Sqlresponse, column?:string,
+    filterValuesResponse?:Sqlresponse) {
+  return currentViewModel = tableViewModel();
 
-  function onRowChanged(index:number) {
-    const row = viewModel.tableBody[index];
-    const rowId = (rowIdResponse.result.rows as any[][])[index][0];
-    const sql = `update ${tableId} set ${
-        viewModel.tableHead.map((c, ci)=>`'${c}' = '${row[ci]}'`).join(", ")
-        } where rowid = ${rowId}`;
-    gapi.client.fusiontables.query.sql({sql}).execute(
-        (r:any) => console.debug('After ' + sql + ': ' + JSON.stringify(r)));
+  function tableViewModel() {
+    const filterEditor = column ? getFilterEditor(column) : undefined;
+    const viewModel = {
+      ...BASIC_MODEL, title: name, subtitle: description, filterEditor, onRowChanged, editFilterLink
+    } as ViewModel;
+    return addRows(viewModel, rowResponse);
+
+    function onRowChanged(index:number) {
+      const row = viewModel.tableBody[index];
+      const rowId = (rowIdResponse.rows as any[][])[index][0];
+      const sql = `update ${tableId} set ${
+          viewModel.tableHead.map((c, ci) => `'${c}' = '${row[ci]}'`).join(", ")
+          } where rowid = ${rowId}`;
+      gapi.client.fusiontables.query.sql({sql}).execute(
+          (r:any) => console.debug('After ' + sql + ': ' + JSON.stringify(r)));
+    }
+
+    function editFilterLink(addFilter:string) {
+      return hash({...currentPageSpec, addFilter} as PageSpec);
+    }
+
+    function getFilterEditor(column:string) {
+      const wc = currentPageSpec.filter || {};
+      const wasSelected = wc[column] || [];
+      const filters = filterValuesResponse!.rows!.map(toFilter);
+      return {column, filters, onDone};
+
+      function toFilter(r:any[]) {
+        const value = '' + r[0];
+        const selected = wasSelected.includes(value);
+        return {value, count: r[1], selected} as Filter;
+      }
+
+      function onDone() {
+        const values = filters.filter(f => f.selected).map(f => f.value);
+        if (values.length) {
+          wc[column] = values;
+        } else {
+          delete wc[column];
+        }
+        if (Object.keys(wc).length) {
+          currentPageSpec.filter = wc;
+        } else {
+          delete currentPageSpec.filter;
+        }
+        delete currentPageSpec.addFilter;
+        window.location.hash = hash(currentPageSpec);
+      }
+    }
   }
 }
 
+export function setCurrentViewModelToListing(sql:string, sqlResponse:Sqlresponse) {
+  return currentViewModel = addRows({...BASIC_MODEL, subtitle: sql} as ViewModel, sqlResponse);
+}
+
 /** Returns given ViewModel after setting tableHead and tableBody from given SQL response. */
-function addRows(model:ViewModel, sqlResponse:Response<Sqlresponse>) {
-  const {columns, rows} = sqlResponse.result;
+function addRows(model:ViewModel, {columns, rows}:Sqlresponse) {
   model.tableHead = columns || [];
   model.tableBody = rows || [];
   return model;

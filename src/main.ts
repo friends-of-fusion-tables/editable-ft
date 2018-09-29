@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PageSpec, parseToCurrentPageSpec} from "./pageSpec";
+import {PageSpec, parseToCurrentPageSpec, whereClauses} from "./pageSpec";
 import {
     LOADING, LOGIN, setCurrentViewModelToTable, setCurrentViewModelToListing
 } from "./viewModel";
 import {drawPage, redrawPage} from "./pageView";
+import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 
 gapi.load('client:auth2', () => {
   gapi.client.init({
@@ -45,19 +46,32 @@ function route(hash:string) {
  * and returns an interstitial ViewModel. Loads listing of owned tables by default.
  */
 function viewModel(spec:PageSpec) {
-  const {tableId, limit, orderBy} = spec;
+  const {tableId, limit, orderBy, addFilter} = spec;
   if (tableId) {
+    const clauses = whereClauses(spec.filter);
+    const where = clauses.length ? ' where ' + clauses.join(' and ') : '';
     const ordering = orderBy ? ' order by ' + orderBy : '';
-    loadTable(tableId, `from ${tableId}${ordering} limit ${limit || 30}`);
+    loadTable(tableId, `from ${tableId}${where}${ordering} limit ${limit || 30}`);
     return LOADING;
 
-    async function loadTable(tableId:string, suffix:string) {
-      // Three concurrent requests
-      const [table, rowResult, rowIdResult] = await Promise.all(
-          [gapi.client.fusiontables.table.get({tableId}),
-            gapi.client.fusiontables.query.sql({sql: 'select * ' + suffix}),
-            gapi.client.fusiontables.query.sql({sql: 'select ROWID ' + suffix})]);
-      drawPage(setCurrentViewModelToTable(table, rowResult, rowIdResult));
+    async function loadTable(tableId:string, querySuffix:string) {
+      // Three or four concurrent requests
+      const [table, rowResult, rowIdResult, filterValues] = await Promise.all(
+          [gapi.client.fusiontables.table.get({tableId}), query('select * ' + querySuffix),
+            query('select ROWID ' + querySuffix), queryFilterValues()]);
+      drawPage(
+          setCurrentViewModelToTable(table.result, rowResult.result, rowIdResult.result, addFilter,
+              addFilter ? filterValues.result : undefined));
+
+      function query(sql:string) {
+        return gapi.client.fusiontables.query.sql({sql});
+      }
+
+      function queryFilterValues() {
+        return addFilter ? query(
+            `select '${addFilter}', count() from ${tableId}${where} group by '${addFilter}'`)
+            : {} as gapi.client.Request<Sqlresponse>;
+      }
     }
   }
   loadTableListing();
@@ -66,7 +80,7 @@ function viewModel(spec:PageSpec) {
   async function loadTableListing() {
     const sql = "show tables";
     const sqlResponse = await gapi.client.fusiontables.query.sql({sql});
-    drawPage(setCurrentViewModelToListing(sql, sqlResponse));
+    drawPage(setCurrentViewModelToListing(sql, sqlResponse.result));
   }
 }
 

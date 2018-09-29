@@ -31,6 +31,7 @@ export function drawPage(model:ViewModel) {
 
       <div id="main">
         <div class="header">
+        <span>Success</span>
           <h1>${model.title}</h1>
           <h2>${model.subtitle}</h2>
         </div>

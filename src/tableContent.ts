@@ -1,5 +1,5 @@
 import {html, TemplateResult} from "../node_modules/lit-html/lit-html";
-import {ViewModel} from "./viewModel";
+import {ViewModel, Filter, FilterEditorModel} from "./viewModel";
 import {hash, PageSpec, currentPageSpec} from "./pageSpec";
 import {redrawPage} from "./pageView";
 
@@ -69,14 +69,41 @@ export function tableContent(model:ViewModel) {
     const orderBy = (dir:string) => hash(
         {...currentPageSpec, orderBy: `'${text}' ${dir}`} as PageSpec);
     const orderClass = currentPageSpec.tableId ? ['pure-menu-item'] : ['hidden'];
+    const editor = getEditor(model.filterEditor);
+
     return html`
 <td class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
   <span class="pure-menu-link">${text}</span>
-	<ul class="pure-menu-children">
+	<ul class="pure-menu-children" @onblur=${() => editor && editor.onDone()}>
 	  <li class=${orderClass}><a href=${orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
 	  <li class=${orderClass}><a href=${orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
+	  <li class=${orderClass}>
+	    <a href=${model.editFilterLink(text)} class="pure-menu-link">Filter</a> 
+	  </li>
+	  ${editor ? filters(editor) : ''}
 	</ul>
 </td>`;
+
+    function getEditor(e?:FilterEditorModel) {
+      return e && e.column == text ? e : undefined;
+    }
+
+    function filters(editor:FilterEditorModel) {
+      return editor.filters.map(filter);
+
+      function filter(f:Filter) {
+        return html`
+     <li class="pure-menu-item">
+       <input type="checkbox" value=${f.selected} @onchange=${onchange}>
+       <span>${f.value}</span>
+       <span style='float:right'>${f.count}</span>
+     </li>`;
+
+        function onchange(e:Event) {
+          f.selected = (e.target as HTMLInputElement).value == 'true';
+        }
+      }
+    }
   }
 
   function tableRow(r:any[], ri:number) {
