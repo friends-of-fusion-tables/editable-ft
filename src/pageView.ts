@@ -1,6 +1,6 @@
-import {ViewModel, ButtonSpec, currentViewModel} from "./viewModel";
-import {render, html} from "../node_modules/lit-html/lit-html";
-import {tableContent} from "./tableContent";
+import {ViewModel, ButtonSpec, currentViewModel} from "./viewModel.js";
+import {render, html} from "../node_modules/lit-html/lit-html.js";
+import {tableContent} from "./tableContent.js";
 
 /** Active slides out menu for small screens. See side-menu.css */
 var isActive = false;

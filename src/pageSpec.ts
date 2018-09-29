@@ -14,12 +14,13 @@ export interface WhereClauseSpec {
 
 export var currentPageSpec = {} as PageSpec;
 
-export function whereClauses(filter?: WhereClauseSpec, except: string = '') {
-  return filter ? filter.key.filter(k => k != except).map(clause) : [];
+export function whereClauses(filter?:WhereClauseSpec, except:string = '') {
+  return filter ? Object.keys(filter).filter(c => c != except).map(clause) : [];
 
-  function clause(column: string) {
+  function clause(column:string) {
     const values = (filter as WhereClauseSpec)[column];
-    return values.length == 1 ? `'${column} = '${values[0]}'` : `'${column}' in (${values.map(v => `'${v}'`)})`;
+    return values.length == 1 ? `'${column}' = '${values[0]}'` : `'${column}' in (${values.map(
+        v => `'${v}'`)})`;
   }
 }
 
@@ -29,7 +30,7 @@ export function parsePageSpec(hash:string) {
   hash.replace(/^#/, '').split("&").map(c=> {
     const e = c.split('=');
     if (e.length == 2) {
-      spec[e[0]] = decodeURIComponent(e[1]);
+      spec[e[0]] = JSON.parse(decodeURIComponent(e[1]));
     }
   });
   return spec.tableId ? spec : {};
@@ -41,7 +42,7 @@ export function hash(spec:PageSpec) {
   var sep = '#';
   for (var key in spec) {
     if (spec.hasOwnProperty(key)) {
-      hash += sep + key + '=' + encodeURIComponent(spec[key]);
+      hash += sep + key + '=' + encodeURIComponent(JSON.stringify(spec[key]));
       sep = '&';
     }
   }

@@ -1,7 +1,7 @@
-import {html, TemplateResult} from "../node_modules/lit-html/lit-html";
-import {ViewModel, Filter, FilterEditorModel} from "./viewModel";
-import {hash, PageSpec, currentPageSpec} from "./pageSpec";
-import {redrawPage} from "./pageView";
+import {html, TemplateResult} from "../node_modules/lit-html/lit-html.js";
+import {ViewModel, Filter, FilterEditorModel} from "./viewModel.js";
+import {hash, PageSpec, currentPageSpec} from "./pageSpec.js";
+import {redrawPage} from "./pageView.js";
 
 /** Encapsulates differences between editing and viewing a table cell. */
 interface CellHandler {
@@ -99,13 +99,13 @@ export function tableContent(model:ViewModel) {
       function filter(f:Filter) {
         return html`
      <li class="pure-menu-item">
-       <input type="checkbox" value=${f.selected} @change=${onchange}>
+       <input type="checkbox" ?checked=${f.selected} @change=${onchange}>
        <span>${f.value}</span>
        <span style='float:right'>${f.count}</span>
      </li>`;
 
         function onchange(e:Event) {
-          f.selected = (e.target as HTMLInputElement).value == 'true';
+          f.selected = (e.target as HTMLInputElement).checked;
         }
       }
     }

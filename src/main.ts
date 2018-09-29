@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PageSpec, parseToCurrentPageSpec, whereClauses} from "./pageSpec";
+import {PageSpec, parseToCurrentPageSpec, whereClauses} from "./pageSpec.js";
 import {
     LOADING, LOGIN, setCurrentViewModelToTable, setCurrentViewModelToListing
-} from "./viewModel";
-import {drawPage, redrawPage} from "./pageView";
+} from "./viewModel.js";
+import {drawPage, redrawPage} from "./pageView.js";
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 
 gapi.load('client:auth2', () => {
@@ -48,12 +48,16 @@ function route(hash:string) {
 function viewModel(spec:PageSpec) {
   const {tableId, limit, orderBy, addFilter} = spec;
   if (tableId) {
-    const clauses = whereClauses(spec.filter);
-    const where = clauses.length ? ' where ' + clauses.join(' and ') : '';
+    const where = getWhereClauses();
     const ordering = orderBy ? ' order by ' + orderBy : '';
     loadTable(tableId, `from ${tableId}${where}${ordering} limit ${limit || 30}`);
     return LOADING;
 
+    function getWhereClauses(except?:string) {
+      const clauses = whereClauses(spec.filter, except);
+      return clauses.length ? ' where ' + clauses.join(' and ') : '';
+    }
+    
     async function loadTable(tableId:string, querySuffix:string) {
       // Three or four concurrent requests
       const [table, rowResult, rowIdResult, filterValues] = await Promise.all(
@@ -68,6 +72,7 @@ function viewModel(spec:PageSpec) {
       }
 
       function queryFilterValues() {
+        const where = getWhereClauses(addFilter);
         return addFilter ? query(
             `select '${addFilter}', count() from ${tableId}${where} group by '${addFilter}'`)
             : {} as gapi.client.Request<Sqlresponse>;
