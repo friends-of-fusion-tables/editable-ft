@@ -20,8 +20,7 @@ const VIEWED_CELL_HANDLER = {
   keydown() {},
   render(value: string) {
     const m = /^(.*)\b([01][\w-]{34,42})\b(.*)$/.exec(value);
-    return m ? html`${m[1]}<a href=${hash({ tableId: m[2] })}>${m[2]}</a>${m[3]}`
-      : value;
+    return m ? html`${m[1]}<a href=${hash({tableId: m[2]})}>${m[2]}</a>${m[3]}` : value;
   }
 } as CellHandler;
 
