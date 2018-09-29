@@ -14,8 +14,16 @@ th {
     overflow: unset;
 }
 
+.pure-table td.pure-menu-active {
+    overflow: unset;
+}
+
+.pure-table thead span {
+    color: #777; /* inherit from body */
+}
+
 .pure-table td[contenteditable="true"] {
-   white-space: normal;
+    white-space: normal;
 }
 
 /* Don't center content */

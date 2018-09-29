@@ -70,11 +70,12 @@ export function tableContent(model:ViewModel) {
         {...currentPageSpec, orderBy: `'${text}' ${dir}`} as PageSpec);
     const orderClass = currentPageSpec.tableId ? ['pure-menu-item'] : ['hidden'];
     const editor = getEditor(model.filterEditor);
-
-    return html`
-<td class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+    const menuClass = ["pure-menu-item", "pure-menu-has-children",
+      editor ? "pure-menu-active" : "pure-menu-allow-hover"].join(" ");
+    return html` 
+<td class=${menuClass}>
   <span class="pure-menu-link">${text}</span>
-	<ul class="pure-menu-children" @onblur=${() => editor && editor.onDone()}>
+	<ul class="pure-menu-children" @keydown=${onkeydown}>
 	  <li class=${orderClass}><a href=${orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
 	  <li class=${orderClass}><a href=${orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
 	  <li class=${orderClass}>
@@ -88,13 +89,17 @@ export function tableContent(model:ViewModel) {
       return e && e.column == text ? e : undefined;
     }
 
+    function onkeydown(e:KeyboardEvent) {
+      if (editor && e.key == 'Enter') editor.onDone();
+    }
+
     function filters(editor:FilterEditorModel) {
       return editor.filters.map(filter);
 
       function filter(f:Filter) {
         return html`
      <li class="pure-menu-item">
-       <input type="checkbox" value=${f.selected} @onchange=${onchange}>
+       <input type="checkbox" value=${f.selected} @change=${onchange}>
        <span>${f.value}</span>
        <span style='float:right'>${f.count}</span>
      </li>`;
