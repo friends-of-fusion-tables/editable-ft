@@ -1,6 +1,7 @@
-import {ViewModel, ButtonSpec, currentViewModel} from "./viewModel.js";
-import {render, html} from "../node_modules/lit-html/lit-html.js";
-import {tableContent} from "./tableContent.js";
+import {html, render} from '../node_modules/lit-html/lit-html.js';
+
+import {tableContent} from './tableContent.js';
+import {ButtonSpec, currentViewModel, ViewModel} from './viewModel.js';
 
 /** Active slides out menu for small screens. See side-menu.css */
 var isActive = false;
@@ -9,15 +10,16 @@ var isActive = false;
  * Draw the entire page for the given ViewModel. This is efficient because lit-html re-uses
  * unchanged portions of the DOM and stamps out novel DOM portions from templates in shadow DOM.
  */
-export function drawPage(model:ViewModel) {
+export function drawPage(model: ViewModel) {
   const content = model.action ? actionContent(model.action) : tableContent(model);
   // Outer structure from http://purecss.io/layouts/side-menu/
-  render(html`<div id="layout" class=${activeClass("")}>
-      <a href="#menu" id="menuLink" class=${activeClass("menu-link")} @click=${toggleActive}>
+  render(
+      html`<div id="layout" class=${activeClass('')}>
+      <a href="#menu" id="menuLink" class=${activeClass('menu-link')} @click=${toggleActive}>
         <span></span>
       </a>
 
-      <div id="menu" class=${activeClass("")}>
+      <div id="menu" class=${activeClass('')}>
         <div class="pure-menu">
           <a class="pure-menu-heading" href="#">${model.heading}</a>
 
@@ -39,7 +41,8 @@ export function drawPage(model:ViewModel) {
         <div class="content" @click=${() => isActive && toggleActive()}>${content}</div>
       </div>
     </div>
-`, document.body);
+`,
+      document.body);
 
   function toggleActive() {
     isActive = !isActive;
@@ -47,9 +50,9 @@ export function drawPage(model:ViewModel) {
   }
 }
 
-const activeClass = (classes:string) => isActive ? classes + " active" : classes;
+const activeClass = (classes: string) => isActive ? classes + ' active' : classes;
 
-function actionContent({text, click}:ButtonSpec) {
+function actionContent({text, click}: ButtonSpec) {
   return html`<button class="pure-button pure-button-primary" @click=${click}>${text}</button>`;
 }
 

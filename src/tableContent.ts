@@ -1,13 +1,14 @@
-import {html, TemplateResult} from "../node_modules/lit-html/lit-html.js";
-import {ViewModel, Filter, FilterEditorModel} from "./viewModel.js";
-import {hash, PageSpec, currentPageSpec} from "./pageSpec.js";
-import {redrawPage} from "./pageView.js";
+import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
+
+import {currentPageSpec, hash, PageSpec} from './pageSpec.js';
+import {redrawPage} from './pageView.js';
+import {Filter, FilterEditorModel, ViewModel} from './viewModel.js';
 
 /** Encapsulates differences between editing and viewing a table cell. */
 interface CellHandler {
-  editable:boolean;
-  keydown(e:KeyboardEvent):void;
-  render(c:string):string|TemplateResult;
+  editable: boolean;
+  keydown(e: KeyboardEvent): void;
+  render(c: string): string|TemplateResult;
 }
 
 /**
@@ -15,23 +16,26 @@ interface CellHandler {
  * clickable links.
  */
 const VIEWED_CELL_HANDLER = {
-  editable: false, keydown() {}, render(value:string) {
+  editable: false,
+  keydown() {},
+  render(value: string) {
     const m = /^(.*)\b([01][\w-]{34,42})\b(.*)$/.exec(value);
-    return m ? html`${m[1]}<a href=${hash({tableId: m[2]})}>${m[2]}</a>${m[3]}` : value;
+    return m ? html
+    `${m[1]}<a href=${hash({tableId: m[2]})}>${m[2]}</a>${m[3]}`: value;
   }
 } as CellHandler;
 
 /** The index of the edited row. -1 means no row is in edit mode. */
-var edited:number = -1;
+var edited: number = -1;
 
 /**
  * Returns CellHandler for the given ViewModel. Cell values are rendered literally. Escape key exits
  * edit mode. Enter key, writes cell text content back to model and calls onRowChanged.
  */
-function editedCellHandler({tableBody, onRowChanged}:ViewModel) {
-  return {editable: true, keydown, render: (c:string) => c} as CellHandler;
+function editedCellHandler({tableBody, onRowChanged}: ViewModel) {
+  return {editable: true, keydown, render: (c: string) => c} as CellHandler;
 
-  function keydown(e:KeyboardEvent) {
+  function keydown(e: KeyboardEvent) {
     if (e.code == 'Escape') {
       edited = -1;
       redrawPage();
@@ -54,7 +58,7 @@ function editedCellHandler({tableBody, onRowChanged}:ViewModel) {
  * intended for the content element of the side-menu layout. Header row has menu on hover for column
  * actions, presently just ordering.
  */
-export function tableContent(model:ViewModel) {
+export function tableContent(model: ViewModel) {
   return html`
     <table class="pure-table pure-table-bordered">
 	   <thead>
@@ -65,19 +69,23 @@ export function tableContent(model:ViewModel) {
      </tbody>
     </table>`;
 
-  function headerCell(text:string) {
-    const orderBy = (dir:string) => hash(
-        {...currentPageSpec, orderBy: `'${text}' ${dir}`} as PageSpec);
+  function headerCell(text: string) {
+    const orderBy = (dir: string) =>
+        hash({...currentPageSpec, orderBy: `'${text}' ${dir}`} as PageSpec);
     const orderClass = currentPageSpec.tableId ? ['pure-menu-item'] : ['hidden'];
     const editor = getEditor(model.filterEditor);
-    const menuClass = ["pure-menu-item", "pure-menu-has-children",
-      editor ? "pure-menu-active" : "pure-menu-allow-hover"].join(" ");
+    const menuClass = [
+      'pure-menu-item', 'pure-menu-has-children',
+      editor ? 'pure-menu-active' : 'pure-menu-allow-hover'
+    ].join(' ');
     return html` 
 <td class=${menuClass}>
   <span class="pure-menu-link">${text}</span>
 	<ul class="pure-menu-children" @keydown=${onkeydown}>
-	  <li class=${orderClass}><a href=${orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
-	  <li class=${orderClass}><a href=${orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
+	  <li class=${orderClass}><a href=${
+        orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
+	  <li class=${orderClass}><a href=${
+        orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
 	  <li class=${orderClass}>
 	    <a href=${model.editFilterLink(text)} class="pure-menu-link">Filter</a> 
 	  </li>
@@ -85,18 +93,18 @@ export function tableContent(model:ViewModel) {
 	</ul>
 </td>`;
 
-    function getEditor(e?:FilterEditorModel) {
+    function getEditor(e?: FilterEditorModel) {
       return e && e.column == text ? e : undefined;
     }
 
-    function onkeydown(e:KeyboardEvent) {
+    function onkeydown(e: KeyboardEvent) {
       if (editor && e.key == 'Enter') editor.onDone();
     }
 
-    function filters(editor:FilterEditorModel) {
+    function filters(editor: FilterEditorModel) {
       return editor.filters.map(filter);
 
-      function filter(f:Filter) {
+      function filter(f: Filter) {
         return html`
      <li class="pure-menu-item">
        <input type="checkbox" ?checked=${f.selected} @change=${onchange}>
@@ -104,28 +112,26 @@ export function tableContent(model:ViewModel) {
        <span style='float:right'>${f.count}</span>
      </li>`;
 
-        function onchange(e:Event) {
+        function onchange(e: Event) {
           f.selected = (e.target as HTMLInputElement).checked;
         }
       }
     }
   }
 
-  function tableRow(r:any[], ri:number) {
+  function tableRow(r: any[], ri: number) {
     const {editable, keydown, render} =
         ri == edited ? editedCellHandler(model) : VIEWED_CELL_HANDLER;
     return html`<tr @dblclick=${dblclick}>${r.map(c => cell(c))}</tr>`;
 
-    function dblclick(e:Event) {
+    function dblclick(e: Event) {
       edited = ri;
       redrawPage();
       (e.target as HTMLElement).focus();
     }
 
-    function cell(c:any) {
+    function cell(c: any) {
       return html`<td contenteditable=${editable} @keydown=${keydown}>${render('' + c)}</td>`;
     }
   }
 }
-
-
