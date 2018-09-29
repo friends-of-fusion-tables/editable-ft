@@ -55,7 +55,7 @@ export const LOGIN = {
   action: {text: 'Authorize', click: () => gapi.auth2.getAuthInstance().signIn()},
 } as ViewModel;
 
-export var currentViewModel = LOADING;
+export let currentViewModel = LOADING;
 
 /**
  * Returns ViewModel for loaded table, rows, and row IDs. Row IDs must correspond to the rows, i.e.,

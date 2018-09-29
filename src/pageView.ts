@@ -4,7 +4,7 @@ import {tableContent} from './tableContent.js';
 import {ButtonSpec, currentViewModel, ViewModel} from './viewModel.js';
 
 /** Active slides out menu for small screens. See side-menu.css */
-var isActive = false;
+let isActive = false;
 
 /**
  * Draw the entire page for the given ViewModel. This is efficient because lit-html re-uses

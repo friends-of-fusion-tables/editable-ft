@@ -20,13 +20,13 @@ const VIEWED_CELL_HANDLER = {
   keydown() {},
   render(value: string) {
     const m = /^(.*)\b([01][\w-]{34,42})\b(.*)$/.exec(value);
-    return m ? html
-    `${m[1]}<a href=${hash({tableId: m[2]})}>${m[2]}</a>${m[3]}`: value;
+    return m ? html`${m[1]}<a href=${hash({ tableId: m[2] })}>${m[2]}</a>${m[3]}`
+      : value;
   }
 } as CellHandler;
 
 /** The index of the edited row. -1 means no row is in edit mode. */
-var edited: number = -1;
+let edited: number = -1;
 
 /**
  * Returns CellHandler for the given ViewModel. Cell values are rendered literally. Escape key exits
@@ -36,14 +36,14 @@ function editedCellHandler({tableBody, onRowChanged}: ViewModel) {
   return {editable: true, keydown, render: (c: string) => c} as CellHandler;
 
   function keydown(e: KeyboardEvent) {
-    if (e.code == 'Escape') {
+    if (e.code === 'Escape') {
       edited = -1;
       redrawPage();
-    } else if (e.code == 'Enter') {
+    } else if (e.code === 'Enter') {
       const targetCell = e.target as HTMLTableCellElement;
       const cellElements = (targetCell.closest('tr') as HTMLTableRowElement).cells;
       const modelRow = tableBody[edited];
-      for (var i = cellElements.length; --i >= 0;) {
+      for (let i = cellElements.length; --i >= 0;) {
         modelRow[i] = cellElements.item(i).textContent;
       }
       if (onRowChanged) onRowChanged(edited);
@@ -79,7 +79,7 @@ export function tableContent(model: ViewModel) {
       'pure-menu-has-children',
       editor ? 'pure-menu-active' : 'pure-menu-allow-hover'
     ].join(' ');
-    return html` 
+    return html`
 <td class=${menuClass}>
   <span class="pure-menu-link">${text}</span>
 	<ul class="pure-menu-children" @keydown=${onkeydown}>
@@ -88,18 +88,18 @@ export function tableContent(model: ViewModel) {
 	  <li class=${orderClass}><a href=${
         orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
 	  <li class=${orderClass}>
-	    <a href=${model.editFilterLink(text)} class="pure-menu-link">Filter</a> 
+	    <a href=${model.editFilterLink(text)} class="pure-menu-link">Filter</a>
 	  </li>
 	  ${editor ? filters(editor) : ''}
 	</ul>
 </td>`;
 
     function getEditor(e?: FilterEditorModel) {
-      return e && e.column == text ? e : undefined;
+      return e && e.column === text ? e : undefined;
     }
 
     function onkeydown(e: KeyboardEvent) {
-      if (editor && e.key == 'Enter') editor.onDone();
+      if (editor && e.key === 'Enter') editor.onDone();
     }
 
     function filters(editor: FilterEditorModel) {
@@ -122,7 +122,7 @@ export function tableContent(model: ViewModel) {
 
   function tableRow(r: any[], ri: number) {
     const {editable, keydown, render} =
-        ri == edited ? editedCellHandler(model) : VIEWED_CELL_HANDLER;
+        ri === edited ? editedCellHandler(model) : VIEWED_CELL_HANDLER;
     return html`<tr @dblclick=${dblclick}>${r.map(c => cell(c))}</tr>`;
 
     function dblclick(e: Event) {

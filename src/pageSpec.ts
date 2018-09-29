@@ -29,7 +29,7 @@ export function parsePageSpec(hash: string) {
   const spec = {} as PageSpec;
   hash.replace(/^#/, '').split('&').map(c => {
     const e = c.split('=');
-    if (e.length == 2) {
+    if (e.length === 2) {
       spec[e[0]] = JSON.parse(decodeURIComponent(e[1]));
     }
   });

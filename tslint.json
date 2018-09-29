@@ -1,6 +1,9 @@
 {
   "rules": {
-    "arrow-parens": true,
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
     "class-name": true,
     "indent": [
       true,
