@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import {PageSpec, parseToCurrentPageSpec, whereClauses} from './pageSpec.js';
-import {drawPage, redrawPage} from './pageView.js';
-import {LOADING, LOGIN, setCurrentViewModelToListing, setCurrentViewModelToTable} from './viewModel.js';
+import {drawPage} from './pageView.js';
+import {currentViewModel, LOADING, LOGIN, setCurrentViewModelToListing, setCurrentViewModelToTable} from './viewModel.js';
 
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 
@@ -102,4 +102,4 @@ function viewModel(spec: PageSpec) {
   }
 }
 
-redrawPage();
+drawPage(currentViewModel);

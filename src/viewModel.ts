@@ -1,6 +1,7 @@
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 import Table = gapi.client.fusiontables.Table;
 import {currentPageSpec, PageSpec, hash} from './pageSpec.js';
+import {drawPage} from './pageView.js';
 
 /** Data and behavior backing the view. */
 export interface ViewModel {
@@ -8,10 +9,21 @@ export interface ViewModel {
   menu: {item: string, link: string}[];
   title?: string;
   subtitle?: string;
+  action?: ButtonSpec;
   tableHead: string[];
   tableBody: any[][];
+
+  redrawPage(): void;
+  routeToPage(pageSpec: PageSpec): void;
+}
+
+export interface ButtonSpec {
+  text: string;
+  click: (e: Event) => void;
+}
+
+export interface TableViewModel extends ViewModel {
   onRowChanged?: (index: number) => void;
-  action?: ButtonSpec;
   editFilterLink(column: string): string;
   filterEditor?: FilterEditorModel;
 }
@@ -28,11 +40,6 @@ export interface Filter {
   count: any;
 }
 
-export interface ButtonSpec {
-  text: string;
-  click: (e: Event) => void;
-}
-
 export const BASIC_MODEL = {
   heading: 'Editable FT',
   menu: [
@@ -42,6 +49,8 @@ export const BASIC_MODEL = {
   tableHead: [],
   tableBody: [],
   editFilterLink: () => '#',
+  routeToPage: (pageSpec: PageSpec) => window.location.hash = hash(pageSpec),
+  redrawPage: () => drawPage(currentViewModel),
 } as ViewModel;
 
 export const LOADING = {
@@ -55,7 +64,7 @@ export const LOGIN = {
   action: {text: 'Authorize', click: () => gapi.auth2.getAuthInstance().signIn()},
 } as ViewModel;
 
-export let currentViewModel = LOADING;
+export let currentViewModel: ViewModel = LOADING;
 
 /**
  * Returns ViewModel for loaded table, rows, and row IDs. Row IDs must correspond to the rows, i.e.,
@@ -66,13 +75,14 @@ export function setCurrentViewModelToTable(
     rowResponse: Sqlresponse,
     rowIdResponse: Sqlresponse,
     column?: string,
-    filterValuesResponse?: Sqlresponse) {
+    filterValuesResponse?: Sqlresponse,
+    toCopy: ViewModel = BASIC_MODEL) {
   return currentViewModel = tableViewModel();
 
   function tableViewModel() {
     const filterEditor = column ? getFilterEditor(column) : undefined;
     const viewModel = {
-      ...BASIC_MODEL,
+      ...toCopy,
       title: name,
       subtitle: description,
       filterEditor,
@@ -120,7 +130,7 @@ export function setCurrentViewModelToTable(
           delete currentPageSpec.filter;
         }
         delete currentPageSpec.addFilter;
-        window.location.hash = hash(currentPageSpec);
+        toCopy.routeToPage(currentPageSpec);
       }
     }
   }

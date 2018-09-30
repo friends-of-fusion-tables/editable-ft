@@ -1,8 +1,7 @@
 import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
 
 import {currentPageSpec, hash, PageSpec} from './pageSpec.js';
-import {redrawPage} from './pageView.js';
-import {Filter, FilterEditorModel, ViewModel} from './viewModel.js';
+import {Filter, FilterEditorModel, TableViewModel} from './viewModel.js';
 
 /** Encapsulates differences between editing and viewing a table cell. */
 interface CellHandler {
@@ -31,7 +30,7 @@ let edited: number = -1;
  * Returns CellHandler for the given ViewModel. Cell values are rendered literally. Escape key exits
  * edit mode. Enter key, writes cell text content back to model and calls onRowChanged.
  */
-function editedCellHandler({tableBody, onRowChanged}: ViewModel) {
+function editedCellHandler({tableBody, onRowChanged, redrawPage}: TableViewModel) {
   return {editable: true, keydown, render: (c: string) => c} as CellHandler;
 
   function keydown(e: KeyboardEvent) {
@@ -43,7 +42,7 @@ function editedCellHandler({tableBody, onRowChanged}: ViewModel) {
       const cellElements = (targetCell.closest('tr') as HTMLTableRowElement).cells;
       const modelRow = tableBody[edited];
       for (let i = cellElements.length; --i >= 0;) {
-        modelRow[i] = cellElements.item(i).textContent;
+        modelRow[i] = (cellElements.item(i) as HTMLTableCellElement).textContent;
       }
       if (onRowChanged) onRowChanged(edited);
       edited = -1;
@@ -57,7 +56,7 @@ function editedCellHandler({tableBody, onRowChanged}: ViewModel) {
  * intended for the content element of the side-menu layout. Header row has menu on hover for column
  * actions, presently just ordering.
  */
-export function tableContent(model: ViewModel) {
+export function tableContent(model: TableViewModel) {
   return html`
     <table class="pure-table pure-table-bordered">
 	   <thead>
@@ -126,7 +125,7 @@ export function tableContent(model: ViewModel) {
 
     function dblclick(e: Event) {
       edited = ri;
-      redrawPage();
+      model.redrawPage();
       (e.target as HTMLElement).focus();
     }
 

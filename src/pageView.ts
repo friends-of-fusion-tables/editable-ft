@@ -1,7 +1,7 @@
 import {html, render} from '../node_modules/lit-html/lit-html.js';
 
 import {tableContent} from './tableContent.js';
-import {ButtonSpec, currentViewModel, ViewModel} from './viewModel.js';
+import {ButtonSpec, currentViewModel, TableViewModel, ViewModel} from './viewModel.js';
 
 /** Active slides out menu for small screens. See side-menu.css */
 let isActive = false;
@@ -11,7 +11,8 @@ let isActive = false;
  * unchanged portions of the DOM and stamps out novel DOM portions from templates in shadow DOM.
  */
 export function drawPage(model: ViewModel) {
-  const content = model.action ? actionContent(model.action) : tableContent(model);
+  const content =
+      model.action ? actionContent(model.action) : tableContent(model as TableViewModel);
   // Outer structure from http://purecss.io/layouts/side-menu/
   render(
       html`<div id="layout" class=${activeClass('')}>
@@ -46,7 +47,7 @@ export function drawPage(model: ViewModel) {
 
   function toggleActive() {
     isActive = !isActive;
-    redrawPage();
+    model.redrawPage();
   }
 }
 

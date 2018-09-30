@@ -21,7 +21,7 @@
     "outDir": "js"
   },
   "include": [
-    "src/**/*.ts"
+    "src/*.ts"
   ],
   "exclude": []
 }

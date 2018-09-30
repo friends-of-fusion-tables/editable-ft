@@ -1,11 +1,7 @@
-import {hash, parseToCurrentPageSpec} from '../../js/pageSpec.js';
+import {hash, PageSpec, parseToCurrentPageSpec} from '../../js/pageSpec.js';
 import {drawPage} from '../../js/pageView.js';
-import {setCurrentViewModelToTable} from '../../js/viewModel.js';
+import {BASIC_MODEL, setCurrentViewModelToTable, ViewModel} from '../../js/viewModel.js';
 
-interface Response<T> {
-  // The JSON-parsed result.
-  result: T;
-}
 interface Sqlresponse {}
 interface Table {
   tableId?: string;
@@ -57,7 +53,15 @@ const rowIdResult = {
 };
 
 parseToCurrentPageSpec(hash({tableId: table.tableId}));
+const model = {
+  ...BASIC_MODEL,
+  redrawPage: () => console.log('redraw'),
+  routeToPage: (pageSpec: PageSpec) => console.log('route to ' + JSON.stringify(pageSpec))
+} as ViewModel;
 drawPage(setCurrentViewModelToTable(
-    {result: table} as Response<Table>,
-    {result: rowResult} as Response<Sqlresponse>,
-    {result: rowIdResult} as Response<Sqlresponse>));
+    table as Table,
+    rowResult as Sqlresponse,
+    rowIdResult as Sqlresponse,
+    undefined,
+    undefined,
+    model));
