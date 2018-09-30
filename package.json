@@ -16,11 +16,18 @@
     "test": "npm run dev && cd test && ../scripts/build.sh simpleTable development",
     "run": "pgrep http-server || http-server -p 8080",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
-    "lint": "tslint --project ./"
+    "lint": "tslint --project ./",
+    "wtc": "pushd test; tsc; popd; wct -l chrome -p --npm"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.0",
+    "@types/mocha": "^5.2.0",
+    "@webcomponents/webcomponentsjs": "^2.0.4",
+    "chai": "^4.1.2",
     "clang-format": "^1.2.4",
     "tslint": "^5.9.1",
-    "typescript": "^3.1.1"
+    "typescript": "^3.1.1",
+    "wct-browser-legacy": "^1.0.1",
+    "web-component-tester": "^6.8.0"
   }
 }
