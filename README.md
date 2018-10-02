@@ -15,17 +15,17 @@ the demo uses a shared API key with freebie quota.
 3.  Get a Google API key by [following instructions](https://support.google.com/googleapi/answer/6158862?hl=en&ref_topic=7013279). 
     Include localhost:8080 among the "HTTP referrers". Place the API key in a file 'api.key'.
 4.  [Install npm](https://www.npmjs.com/get-npm)
-5.  Install typescript compiler and webpack globally
+5.  Install http server and webpack globally
 ```bash
-npm install -g typescript webpack webpack-cli http-server
+npm install -g webpack webpack-cli http-server
 ```
 6.  Update local node repository
 ```bash
 npm update
-```	
+```
 7.  Build and run a local demo
 ```bash
 npm run build
 npm run run
 ```
-8.  Open http://localhost:8080
+8.  Open http://localhost:8080/debug.html

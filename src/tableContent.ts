@@ -80,7 +80,8 @@ export function tableContent(model: TableViewModel) {
     return html`
 <td class=${menuClass}>
   <span class="pure-menu-link">${text}</span>
-	<ul class="pure-menu-children" @keydown=${onkeydown}>
+	<ul class="pure-menu-children" @keydown=${onkeydown} 
+	    style="border:1px solid gray;border-radius:10px">
 	  <li class=${orderClass}><a href=${
         orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
 	  <li class=${orderClass}><a href=${
