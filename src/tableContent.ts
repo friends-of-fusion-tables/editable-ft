@@ -1,6 +1,7 @@
 import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
 
 import {currentPageSpec, hash, PageSpec} from './pageSpec.js';
+import {redrawPage} from './pageView.js';
 import {Filter, FilterEditorModel, TableViewModel} from './viewModel.js';
 
 /** Encapsulates differences between editing and viewing a table cell. */
@@ -87,8 +88,9 @@ export function tableContent(model: TableViewModel) {
 	  <li class=${orderClass}><a href=${
         orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
 	  <li class=${orderClass}>
-	    <a href=${model.editFilterLink(text)} class="pure-menu-link">Filter</a>
+	    <a href=${editor ? '' : model.editFilterLink(text)} class="pure-menu-link">Filter</a>
 	  </li>
+	  ${editor ? filterSearch(editor) : ''}
 	  ${editor ? filters(editor) : ''}
 	</ul>
 </td>`;
@@ -101,8 +103,17 @@ export function tableContent(model: TableViewModel) {
       if (editor && e.key === 'Enter') editor.onDone();
     }
 
+    function filterSearch(editor: FilterEditorModel) {
+      return html`<li class="pure-menu-item"><input type="text" @input=${onInput}></li>`;
+
+      function onInput(e: Event) {
+        editor.filterSearch = (e.target as HTMLInputElement).value;
+        redrawPage();
+      }
+    }
+
     function filters(editor: FilterEditorModel) {
-      return editor.filters.map(filter);
+      return editor.filter.map(filter);
 
       function filter(f: Filter) {
         return html`

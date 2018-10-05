@@ -30,7 +30,8 @@ export interface TableViewModel extends ViewModel {
 
 export interface FilterEditorModel {
   column: string;
-  filters: Filter[];
+  filterSearch: string;
+  filter: Filter[];
   onDone(): void;
 }
 
@@ -99,10 +100,18 @@ export function setCurrentViewModelToTable(
   }
 
   function getFilterEditor(column: string) {
-    const wc = currentPageSpec.filter || {};
-    const wasSelected = wc[column] || [];
+    const pf = currentPageSpec.filter || {};
+    const wasSelected = pf[column] || [];
     const filters = filterValuesResponse!.rows!.map(toFilter);
-    return {column, filters, onDone};
+    return {
+      column,
+      filterSearch: '',
+      onDone,
+      get filter() {
+        const re = new RegExp(this.filterSearch, 'i');
+        return filters.filter(f => re.test(f.value)).slice(0, 20);
+      }
+    };
 
     function toFilter(r: any[]) {
       const value = '' + r[0];
@@ -113,12 +122,12 @@ export function setCurrentViewModelToTable(
     function onDone() {
       const values = filters.filter(f => f.selected).map(f => f.value);
       if (values.length) {
-        wc[column] = values;
+        pf[column] = values;
       } else {
-        delete wc[column];
+        delete pf[column];
       }
-      if (Object.keys(wc).length) {
-        currentPageSpec.filter = wc;
+      if (Object.keys(pf).length) {
+        currentPageSpec.filter = pf;
       } else {
         delete currentPageSpec.filter;
       }
