@@ -24,18 +24,23 @@ export interface ButtonSpec {
 
 export interface TableViewModel extends ViewModel {
   onRowChanged?: (index: number) => void;
+
+  /** Returns a URL for a page that builds a where clause for the given column. */
   editFilterLink(column: string): string;
   filterEditor?: FilterEditorModel;
 }
 
+/** Model for building the where clause for a specific column.  */
 export interface FilterEditorModel {
   column: string;
+
+  /** Constrains the values in property 'filter'. */
   filterSearch: string;
-  filter: Filter[];
+  filter: ValueFilter[];
   onDone(): void;
 }
 
-export interface Filter {
+export interface ValueFilter {
   value: string;
   selected: boolean;
   count: any;
@@ -75,14 +80,16 @@ export function setCurrentViewModelToTable(
     {name, description, tableId}: Table,
     rowResponse: Sqlresponse,
     rowIdResponse: Sqlresponse,
-    column?: string,
+    filterBuildingColumn?: string,
     filterValuesResponse?: Sqlresponse,
     toCopy: ViewModel = BASIC_MODEL) {
-  const filterEditor = column ? getFilterEditor(column) : undefined;
+  const filterEditor = ((c, r) => c && r && r.rows ? getFilterEditor(c, r.rows) : undefined)(
+      filterBuildingColumn, filterValuesResponse);
   const viewModel =
       {...toCopy, title: name, subtitle: description, filterEditor, onRowChanged, editFilterLink} as
       ViewModel;
-  return currentViewModel = addRows(viewModel, rowResponse);
+  currentViewModel = addRows(viewModel, rowResponse);
+  return currentViewModel;
 
   /** Calls update SQL using the row ID and values for the given index. */
   function onRowChanged(index: number) {
@@ -99,10 +106,16 @@ export function setCurrentViewModelToTable(
     return hash({...currentPageSpec, addFilter} as PageSpec);
   }
 
-  function getFilterEditor(column: string) {
+  /**
+   * Returns FilterEditorModel for the given column and rows from a group by query for that column.
+   * Reflects the PageSpec's currently filtered values as "selected". Implements the property,
+   * filter, as up to 20 ValueFilters whose value matches the filterSearch. Implements onDone by
+   * routing to a new PageSpec, whose filters reflect the updates FilterModel. 
+   */
+  function getFilterEditor(column: string, groupByRows: any[][]) {
     const pf = currentPageSpec.filter || {};
     const wasSelected = pf[column] || [];
-    const filters = filterValuesResponse!.rows!.map(toFilter);
+    const filters = groupByRows.map(toFilter);
     return {
       column,
       filterSearch: '',
@@ -116,7 +129,7 @@ export function setCurrentViewModelToTable(
     function toFilter(r: any[]) {
       const value = '' + r[0];
       const selected = wasSelected.includes(value);
-      return {value, count: r[1], selected} as Filter;
+      return {value, count: r[1], selected} as ValueFilter;
     }
 
     function onDone() {

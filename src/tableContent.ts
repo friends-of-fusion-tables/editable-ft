@@ -2,7 +2,7 @@ import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
 
 import {currentPageSpec, hash, PageSpec} from './pageSpec.js';
 import {redrawPage} from './pageView.js';
-import {Filter, FilterEditorModel, TableViewModel} from './viewModel.js';
+import {FilterEditorModel, TableViewModel, ValueFilter} from './viewModel.js';
 
 /** Encapsulates differences between editing and viewing a table cell. */
 interface CellHandler {
@@ -68,11 +68,23 @@ export function tableContent(model: TableViewModel) {
      </tbody>
     </table>`;
 
+  /**
+   * Returns TemplateResult for table header cell with the given column name. Uses "td" rather than
+   * "th" lest the child menus inherit "th" style. Presents a short menu on hover. Its items each
+   * have have a link that routes to a different PageSpec, the two order directions, plus a filter
+   * building mode. Filter building mode is indicated by the presence of a FilterEditorModel whose
+   * column matches this column's name.
+   *
+   * While editing filters, the sub-menu is pinned using CSS class, pure-menu-active, and it
+   * includes a text input for searching filter values, followed by a listing of values with
+   * checkboxes to include that value in the filter. Filter editor event handlers, update the
+   * FilterEditorModel instance and may call redraw page.
+   */
   function headerCell(text: string) {
     const orderBy = (dir: string) =>
         hash({...currentPageSpec, orderBy: `'${text}' ${dir}`} as PageSpec);
     const orderClass = currentPageSpec.tableId ? ['pure-menu-item'] : ['hidden'];
-    const editor = getEditor(model.filterEditor);
+    const editor = (e => e && e.column === text ? e : undefined)(model.filterEditor);
     const menuClass = [
       'pure-menu-item',
       'pure-menu-has-children',
@@ -95,10 +107,6 @@ export function tableContent(model: TableViewModel) {
 	</ul>
 </td>`;
 
-    function getEditor(e?: FilterEditorModel) {
-      return e && e.column === text ? e : undefined;
-    }
-
     function onkeydown(e: KeyboardEvent) {
       if (editor && e.key === 'Enter') editor.onDone();
     }
@@ -115,7 +123,7 @@ export function tableContent(model: TableViewModel) {
     function filters(editor: FilterEditorModel) {
       return editor.filter.map(filter);
 
-      function filter(f: Filter) {
+      function filter(f: ValueFilter) {
         return html`
      <li class="pure-menu-item">
        <input type="checkbox" ?checked=${f.selected} @change=${onchange}>
@@ -133,16 +141,16 @@ export function tableContent(model: TableViewModel) {
   function tableRow(r: any[], ri: number) {
     const {editable, keydown, render} =
         ri === edited ? editedCellHandler(model) : VIEWED_CELL_HANDLER;
-    return html`<tr @dblclick=${dblclick}>${r.map(c => cell(c))}</tr>`;
+    return html`<tr @dblclick=${ondblclick}>${r.map(cell)}</tr>`;
 
-    function dblclick(e: Event) {
+    function ondblclick(e: Event) {
       edited = ri;
       model.redrawPage();
       (e.target as HTMLElement).focus();
     }
 
     function cell(c: any) {
-      return html`<td contenteditable=${editable} @keydown=${keydown}>${render('' + c)}</td>`;
+      return html`<td ?contenteditable=${editable} @keydown=${keydown}>${render('' + c)}</td>`;
     }
   }
 }
