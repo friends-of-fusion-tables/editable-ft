@@ -77,67 +77,60 @@ export function setCurrentViewModelToTable(
     column?: string,
     filterValuesResponse?: Sqlresponse,
     toCopy: ViewModel = BASIC_MODEL) {
-  return currentViewModel = tableViewModel();
+  const filterEditor = column ? getFilterEditor(column) : undefined;
+  const viewModel =
+      {...toCopy, title: name, subtitle: description, filterEditor, onRowChanged, editFilterLink} as
+      ViewModel;
+  return currentViewModel = addRows(viewModel, rowResponse);
 
-  function tableViewModel() {
-    const filterEditor = column ? getFilterEditor(column) : undefined;
-    const viewModel = {
-      ...toCopy,
-      title: name,
-      subtitle: description,
-      filterEditor,
-      onRowChanged,
-      editFilterLink
-    } as ViewModel;
-    return addRows(viewModel, rowResponse);
+  /** Calls update SQL using the row ID and values for the given index. */
+  function onRowChanged(index: number) {
+    const row = viewModel.tableBody[index];
+    const rowId = (rowIdResponse.rows as any[][])[index][0];
+    const sql = `update ${tableId} set ${
+        viewModel.tableHead.map((c, ci) => `'${c}' = '${row[ci]}'`).join(', ')} where rowid = ${
+        rowId}`;
+    gapi.client.fusiontables.query.sql({sql}).execute(
+        (r: any) => console.debug('After ' + sql + ': ' + JSON.stringify(r)));
+  }
 
-    function onRowChanged(index: number) {
-      const row = viewModel.tableBody[index];
-      const rowId = (rowIdResponse.rows as any[][])[index][0];
-      const sql = `update ${tableId} set ${
-          viewModel.tableHead.map((c, ci) => `'${c}' = '${row[ci]}'`).join(', ')} where rowid = ${
-          rowId}`;
-      gapi.client.fusiontables.query.sql({sql}).execute(
-          (r: any) => console.debug('After ' + sql + ': ' + JSON.stringify(r)));
+  function editFilterLink(addFilter: string) {
+    return hash({...currentPageSpec, addFilter} as PageSpec);
+  }
+
+  function getFilterEditor(column: string) {
+    const wc = currentPageSpec.filter || {};
+    const wasSelected = wc[column] || [];
+    const filters = filterValuesResponse!.rows!.map(toFilter);
+    return {column, filters, onDone};
+
+    function toFilter(r: any[]) {
+      const value = '' + r[0];
+      const selected = wasSelected.includes(value);
+      return {value, count: r[1], selected} as Filter;
     }
 
-    function editFilterLink(addFilter: string) {
-      return hash({...currentPageSpec, addFilter} as PageSpec);
-    }
-
-    function getFilterEditor(column: string) {
-      const wc = currentPageSpec.filter || {};
-      const wasSelected = wc[column] || [];
-      const filters = filterValuesResponse!.rows!.map(toFilter);
-      return {column, filters, onDone};
-
-      function toFilter(r: any[]) {
-        const value = '' + r[0];
-        const selected = wasSelected.includes(value);
-        return {value, count: r[1], selected} as Filter;
+    function onDone() {
+      const values = filters.filter(f => f.selected).map(f => f.value);
+      if (values.length) {
+        wc[column] = values;
+      } else {
+        delete wc[column];
       }
-
-      function onDone() {
-        const values = filters.filter(f => f.selected).map(f => f.value);
-        if (values.length) {
-          wc[column] = values;
-        } else {
-          delete wc[column];
-        }
-        if (Object.keys(wc).length) {
-          currentPageSpec.filter = wc;
-        } else {
-          delete currentPageSpec.filter;
-        }
-        delete currentPageSpec.addFilter;
-        toCopy.routeToPage(currentPageSpec);
+      if (Object.keys(wc).length) {
+        currentPageSpec.filter = wc;
+      } else {
+        delete currentPageSpec.filter;
       }
+      delete currentPageSpec.addFilter;
+      toCopy.routeToPage(currentPageSpec);
     }
   }
 }
 
-export function setCurrentViewModelToListing(sql: string, sqlResponse: Sqlresponse) {
-  return currentViewModel = addRows({...BASIC_MODEL, subtitle: sql} as ViewModel, sqlResponse);
+export function setCurrentViewModelToListing(
+    sql: string, sqlResponse: Sqlresponse, toCopy = BASIC_MODEL) {
+  return currentViewModel = addRows({...toCopy, subtitle: sql} as ViewModel, sqlResponse);
 }
 
 /** Returns given ViewModel after setting tableHead and tableBody from given SQL response. */

@@ -20,7 +20,7 @@ export function whereClauses(filter?: WhereClauseSpec, except: string = '') {
   function clause(column: string) {
     const values = (filter as WhereClauseSpec)[column];
     return values.length === 1 ? `'${column}' = '${values[0]}'` :
-                                 `'${column}' in (${values.map(v => `'${v}'`)})`;
+                                 `'${column}' in (${values.map(v => `'${v}'`).join(',')})`;
   }
 }
 
@@ -38,15 +38,8 @@ export function parsePageSpec(hash: string) {
 
 /** Returns URL hash for the given spec. Uses & and = so that first level looks like URL params. */
 export function hash(spec: PageSpec) {
-  let hash = '';
-  let sep = '#';
-  for (const key in spec) {
-    if (spec.hasOwnProperty(key)) {
-      hash += sep + key + '=' + encodeURIComponent(JSON.stringify(spec[key]));
-      sep = '&';
-    }
-  }
-  return hash;
+  const encode = (value: any) => encodeURIComponent(JSON.stringify(value));
+  return '#' + Object.keys(spec).map((key: string) => `${key}=${encode(spec[key])}`).join('&');
 }
 
 export function parseToCurrentPageSpec(hash: string) {

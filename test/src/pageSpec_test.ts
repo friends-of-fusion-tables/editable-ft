@@ -1,4 +1,4 @@
-import {hash, PageSpec, parsePageSpec} from '../../js/pageSpec.js';
+import {currentPageSpec, hash, PageSpec, parsePageSpec, parseToCurrentPageSpec, whereClauses, WhereClauseSpec} from '../../js/pageSpec.js';
 
 describe('PageSpec', () => {
   it('parses its own hash',
@@ -7,4 +7,14 @@ describe('PageSpec', () => {
              filter: {foo: ['x', 'y']}
            }].map((p: PageSpec) => parsePageSpec(hash(p)).should.deep.equal(p)));
   it('falls back to empty if not a table', () => parsePageSpec('#blubber').should.deep.equal({}));
+  it('renders where clauses',
+     () => whereClauses({foo1: ['x'], foo2: ['y', 'z'], bar: ['42']} as WhereClauseSpec, 'bar')
+               .should.deep.equal([`'foo1' = 'x'`, `'foo2' in ('y','z')`]));
+  it('sets currentPageSpec', () => {
+    parseToCurrentPageSpec('#').should.deep.equal({});
+    currentPageSpec.should.deep.equal({});
+    const t = {tableId: 'T'} as PageSpec;
+    parseToCurrentPageSpec(hash(t)).should.deep.equal(t);
+    currentPageSpec.should.deep.equal(t);
+  });
 });
