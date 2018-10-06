@@ -26,6 +26,11 @@ th {
     white-space: normal;
 }
 
+/* Tone down placeholder text in modern browsers */
+::placeholder {
+    color: #ccc;
+}
+
 /* Don't center content */
 .content {
     margin-left: 0
