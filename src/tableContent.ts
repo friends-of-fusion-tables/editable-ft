@@ -59,14 +59,14 @@ function editedCellHandler({tableBody, onRowChanged, redrawPage}: TableViewModel
  */
 export function tableContent(model: TableViewModel) {
   return html`
-    <table class="pure-table pure-table-bordered">
-	   <thead>
-       <tr>${model.tableHead.map(headerCell)}</tr>
-	   </thead>
-     <tbody>
-       ${model.tableBody.map(tableRow)}
-     </tbody>
-    </table>`;
+<table class="pure-table pure-table-bordered">
+  <thead>
+    <tr>${model.tableHead.map(headerCell)}</tr>
+  </thead>
+  <tbody>
+    ${model.tableBody.map(tableRow)}
+  </tbody>
+</table>`;
 
   /**
    * Returns TemplateResult for table header cell with the given column name. Uses "td" rather than
@@ -93,26 +93,36 @@ export function tableContent(model: TableViewModel) {
     return html`
 <td class=${menuClass}>
   <span class="pure-menu-link">${text}</span>
-	<ul class="pure-menu-children" @keydown=${onkeydown} 
-	    style="border:1px solid gray;border-radius:10px">
-	  <li class=${orderClass}><a href=${
-        orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
-	  <li class=${orderClass}><a href=${
-        orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
-	  <li class=${orderClass}>
-	    <a href=${editor ? '' : model.editFilterLink(text)} class="pure-menu-link">Filter</a>
-	  </li>
-	  ${editor ? filterSearch(editor) : ''}
-	  ${editor ? filters(editor) : ''}
-	</ul>
+  <ul class="pure-menu-children" @keydown=${onkeydown} 
+      style="border:1px solid gray;border-radius:10px">
+    <li class=${orderClass}><a href=${orderBy('ASC')} class="pure-menu-link">Order A->Z</a></li>
+    <li class=${orderClass}><a href=${orderBy('DESC')} class="pure-menu-link">Order Z->A</a></li>
+    <li class=${orderClass}>
+      <a href=${editor ? '' : model.editFilterLink(text)} class="pure-menu-link">Filter</a>
+    </li>
+      ${editor ? filterDone(editor) : ''}
+      ${editor ? filterSearch(editor) : ''}
+      ${editor ? filters(editor) : ''}
+  </ul>
 </td>`;
+
+    function filterDone(editor: FilterEditorModel) {
+      return html`
+<li class="pure-menu-item">
+  <button class="pure-menu-link pure-button-primary" @click=${() => editor.onDone()}>Apply filter
+  </button>
+</li>`;
+    }
 
     function onkeydown(e: KeyboardEvent) {
       if (editor && e.key === 'Enter') editor.onDone();
     }
 
     function filterSearch(editor: FilterEditorModel) {
-      return html`<li class="pure-menu-item"><input type="text" @input=${onInput}></li>`;
+      return html`
+<li class="pure-menu-item">
+  <input class="pure-menu-link" type="text" placeholder="Regular expression" @input=${onInput}>
+</li>`;
 
       function onInput(e: Event) {
         editor.filterSearch = (e.target as HTMLInputElement).value;
@@ -125,11 +135,13 @@ export function tableContent(model: TableViewModel) {
 
       function filter(f: ValueFilter) {
         return html`
-     <li class="pure-menu-item">
-       <input type="checkbox" ?checked=${f.selected} @change=${onchange}>
-       <span>${f.value}</span>
-       <span style='float:right'>${f.count}</span>
-     </li>`;
+<li class="pure-menu-item">
+  <div class="pure-menu-link">
+    <input type="checkbox" ?checked=${f.selected} @change=${onchange}>
+    <span>${f.value}</span>
+    <span style='float:right'>${f.count}</span>
+  </div>
+</li>`;
 
         function onchange(e: Event) {
           f.selected = (e.target as HTMLInputElement).checked;

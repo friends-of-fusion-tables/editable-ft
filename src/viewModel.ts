@@ -110,7 +110,7 @@ export function setCurrentViewModelToTable(
    * Returns FilterEditorModel for the given column and rows from a group by query for that column.
    * Reflects the PageSpec's currently filtered values as "selected". Implements the property,
    * filter, as up to 20 ValueFilters whose value matches the filterSearch. Implements onDone by
-   * routing to a new PageSpec, whose filters reflect the updates FilterModel. 
+   * routing to a new PageSpec, whose filters reflect the updates FilterModel.
    */
   function getFilterEditor(column: string, groupByRows: any[][]) {
     const pf = currentPageSpec.filter || {};

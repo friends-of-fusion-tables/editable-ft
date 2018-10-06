@@ -2,7 +2,7 @@
 
 # Data that should not be published
 api.key
-client.id
+*client.id
 
 # Non-source
 *.bak
