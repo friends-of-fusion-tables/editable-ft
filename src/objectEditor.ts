@@ -44,14 +44,14 @@ const HIDING_VALUE_EDITOR_FACTORY: ValueEditorFactory = () => html``;
 
 /** The basic value editor uses JSON.stringify and JSON.parse. */
 const jsonTextarea: ValueEditorFactory = (value, updateValue, onchange) => html`
-  <textarea class="pure-input-1" @change=${(e: Event) => {
+  <textarea class="pure-input-3-4" @change=${(e: Event) => {
   updateValue(JSON.parse((e.target as HTMLTextAreaElement).value));
   onchange(e);
 }}>${JSON.stringify(value)}
   </textarea>`;
 
 const linePerItem: ValueEditorFactory = (value, updateValue, onchange) => html`
-  <textarea class="pure-input-1-3" @change=${(e: Event) => {
+  <textarea class="pure-input-1-2" @change=${(e: Event) => {
   updateValue((e.target as HTMLTextAreaElement).value.split('\n'));
   onchange(e);
 }}>${(value || []).join('\n')}</textarea>`;
@@ -72,7 +72,7 @@ const numberInput: (advice: RenderAdvice) => ValueEditorFactory = (advice) =>
     (value, updateValue, onchange) => html`
   <input 
     type="text" 
-    class="pure-input-1-3" 
+    class="pure-input-1-2" 
     value=${value || advice.default || 0}
     ?readOnly=${!!advice.readOnly}
     pattern="^-?\d*\.?\d*$"
@@ -85,7 +85,7 @@ const textInput: (advice: StringRenderAdvice) => ValueEditorFactory = (advice) =
     (value, updateValue, onchange) => html`
   <input 
     type="text" 
-    class="pure-input-1-3" 
+    class="pure-input-1-2" 
     value=${value}
     ?readOnly=${!!advice.readOnly}
     pattern=${advice.pattern || '.*'}
@@ -99,7 +99,7 @@ const textInput: (advice: StringRenderAdvice) => ValueEditorFactory = (advice) =
 const selectInput: (advice: StringRenderAdvice) => ValueEditorFactory = (advice) =>
     (value, updateValue, onchange) => html`
   <select 
-    class="pure-input-1-3" 
+    class="pure-input-1-2" 
     ?readOnly=${!!advice.readOnly}
     @change=${(e: Event) => {
       updateValue((e.target as HTMLSelectElement).value);
@@ -130,7 +130,7 @@ const controlGroup: (adviceLike: {title?: string, description?: string}, extraMe
   <div class="pure-control-group">
     <label>${title}</label>
     ${input}
-    <span class="pure-form-message-inline">
+    <span class="pure-form-message-inline pure-input-1-4">
       <p>${description}</p>${extraMessage || ''}
     </span>
   </div>`;
@@ -229,11 +229,15 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
           updateValue(value);
         }
       }
-      const jsonFactory: (title: string) => ValueEditorFactory = title =>
-          asFactory(controlGroup({title}))(jsonTextarea);
+      const jsonWrapper: {[key: string]: HtmlOperator} = {};
       return html
       `${Object.keys(factory).map(k => factory[k](value[k], updateFor(k), onchange, redraw))}
        ${Object.keys(value).filter(k => !factory[k]).map(jsonFactory)}`;
+
+      function jsonFactory(k: string): TemplateResult {
+        const wrapper = jsonWrapper[k] || (jsonWrapper[k] = controlGroup({title: k}));
+        return wrapper(jsonTextarea(value[k], updateFor(k), onchange, redraw), redraw);
+      }
     };
   }
 

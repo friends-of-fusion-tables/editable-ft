@@ -5,16 +5,19 @@ import {drawPage} from './pageView.js';
 
 /** Data and behavior backing the view. */
 export interface ViewModel {
+  type: string;
   heading?: string;
   menu: {item: string, link: string}[];
   title?: string;
   subtitle?: string;
-  action?: ButtonSpec;
-  tableHead: string[];
-  tableBody: any[][];
 
   redrawPage(): void;
   routeToPage(pageSpec: PageSpec): void;
+}
+
+export interface ActionViewModel extends ViewModel {
+  type: 'action';
+  action: ButtonSpec;
 }
 
 export interface ButtonSpec {
@@ -22,7 +25,19 @@ export interface ButtonSpec {
   click: (e: Event) => void;
 }
 
+export interface MetaViewModel extends ViewModel {
+  type: 'meta';
+  table: gapi.client.fusiontables.Table;
+  isDirty?: boolean;
+  onchange: () => void;
+  saveChanges: () => void;
+}
+
 export interface TableViewModel extends ViewModel {
+  type: 'table';
+  tableHead: string[];
+  tableBody: any[][];
+  table: gapi.client.fusiontables.Table;
   onRowChanged?: (index: number) => void;
 
   /** Returns a URL for a page that builds a where clause for the given column. */
@@ -47,6 +62,7 @@ export interface ValueFilter {
 }
 
 export const BASIC_MODEL = {
+  type: 'abstract',
   heading: 'Editable FT',
   menu: [
     {item: 'About', link: 'https://github.com/friends-of-fusion-tables/editable-ft'},
@@ -61,11 +77,13 @@ export const BASIC_MODEL = {
 
 export const LOADING = {
   ...BASIC_MODEL,
+  type: 'loading',
   subtitle: 'Loading...'
 } as ViewModel;
 
 export const LOGIN = {
   ...BASIC_MODEL,
+  type: 'action',
   title: 'Authorization required',
   action: {text: 'Authorize', click: () => gapi.auth2.getAuthInstance().signIn()},
 } as ViewModel;
@@ -77,17 +95,26 @@ export let currentViewModel: ViewModel = LOADING;
  * they must come from the same query.
  */
 export function setCurrentViewModelToTable(
-    {name, description, tableId}: Table,
+    table: Table,
     rowResponse: Sqlresponse,
     rowIdResponse: Sqlresponse,
     filterBuildingColumn?: string,
     filterValuesResponse?: Sqlresponse,
     toCopy: ViewModel = BASIC_MODEL) {
+  const {name, description, tableId} = table;
   const filterEditor = ((c, r) => c && r && r.rows ? getFilterEditor(c, r.rows) : undefined)(
       filterBuildingColumn, filterValuesResponse);
-  const viewModel =
-      {...toCopy, title: name, subtitle: description, filterEditor, onRowChanged, editFilterLink} as
-      ViewModel;
+  const viewModel = {
+    ...toCopy,
+    type: 'table',
+    title: name,
+    subtitle: description,
+    table,
+    filterEditor,
+    onRowChanged,
+    editFilterLink
+  } as TableViewModel;
+  viewModel.menu.push({item: 'Metadata', link: hash({tableId, meta: []})});
   currentViewModel = addRows(viewModel, rowResponse);
   return currentViewModel;
 
@@ -150,13 +177,31 @@ export function setCurrentViewModelToTable(
   }
 }
 
+/**
+ * Returns ViewModel for metadata of loaded table.
+ */
+export function setCurrentViewModelToMeta(table: Table, toCopy: ViewModel = BASIC_MODEL) {
+  const {name, description} = table;
+  const tableId = table.tableId!;
+  const model = {...toCopy, type: 'meta', title: name, subtitle: description, table, saveChanges} as
+      MetaViewModel;
+  currentViewModel = model;
+  return model;
+
+  function saveChanges() {
+    if (model.isDirty) {
+      gapi.client.fusiontables.table.update({tableId, resource: table});
+    }
+  }
+}
+
 export function setCurrentViewModelToListing(
     sql: string, sqlResponse: Sqlresponse, toCopy = BASIC_MODEL) {
-  return currentViewModel = addRows({...toCopy, subtitle: sql} as ViewModel, sqlResponse);
+  return currentViewModel = addRows({...toCopy, subtitle: sql} as TableViewModel, sqlResponse);
 }
 
 /** Returns given ViewModel after setting tableHead and tableBody from given SQL response. */
-function addRows(model: ViewModel, {columns, rows}: Sqlresponse) {
+function addRows(model: TableViewModel, {columns, rows}: Sqlresponse) {
   model.tableHead = columns || [];
   model.tableBody = rows || [];
   return model;

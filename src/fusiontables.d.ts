@@ -1522,6 +1522,8 @@ declare namespace gapi.client {
            want to enforce per-user limits.
          */
         userIp?: string;
+
+        resource?: Table;
       }): Request<Table>;
     }
     interface TaskResource {

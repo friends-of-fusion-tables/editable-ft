@@ -5,6 +5,7 @@ export interface PageSpec {
   orderBy?: string;
   addFilter?: string;
   filter?: WhereClauseSpec;
+  meta?: string[];
   [other: string]: any;
 }
 

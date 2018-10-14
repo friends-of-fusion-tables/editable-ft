@@ -18,6 +18,7 @@ import {drawPage} from './pageView.js';
 import {currentViewModel, LOADING, LOGIN, setCurrentViewModelToListing, setCurrentViewModelToTable} from './viewModel.js';
 
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
+import {setCurrentViewModelToMeta} from './viewModel.js';
 
 gapi.load('client:auth2', () => {
   gapi.client
@@ -52,7 +53,7 @@ function route(hash: string) {
  * and returns an interstitial ViewModel. Loads listing of owned tables by default.
  */
 function viewModel(spec: PageSpec) {
-  const {tableId, limit, orderBy, addFilter} = spec;
+  const {tableId, limit, orderBy, addFilter, meta} = spec;
   if (tableId) {
     const where = getWhereClauses();
     const ordering = orderBy ? ' order by ' + orderBy : '';
@@ -72,12 +73,14 @@ function viewModel(spec: PageSpec) {
         query('select ROWID ' + querySuffix),
         queryFilterValues()
       ]);
-      drawPage(setCurrentViewModelToTable(
-          table.result,
-          rowResult.result,
-          rowIdResult.result,
-          addFilter,
-          addFilter ? filterValues.result : undefined));
+      const model = meta ? setCurrentViewModelToMeta(table.result) :
+                           setCurrentViewModelToTable(
+                               table.result,
+                               rowResult.result,
+                               rowIdResult.result,
+                               addFilter,
+                               addFilter ? filterValues.result : undefined);
+      drawPage(model);
 
       function query(sql: string) {
         return gapi.client.fusiontables.query.sql({sql});

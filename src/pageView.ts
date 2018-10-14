@@ -1,7 +1,7 @@
-import {html, render} from '../node_modules/lit-html/lit-html.js';
-
+import {html, render, TemplateResult} from '../node_modules/lit-html/lit-html.js';
 import {tableContent} from './tableContent.js';
-import {ButtonSpec, currentViewModel, TableViewModel, ViewModel} from './viewModel.js';
+import {tableMeta} from './tableMeta.js';
+import {ActionViewModel, ButtonSpec, currentViewModel, MetaViewModel, TableViewModel, ViewModel} from './viewModel.js';
 
 /** Active slides out menu for small screens. See side-menu.css */
 let isActive = false;
@@ -11,8 +11,6 @@ let isActive = false;
  * unchanged portions of the DOM and stamps out novel DOM portions from templates in shadow DOM.
  */
 export function drawPage(model: ViewModel) {
-  const content =
-      model.action ? actionContent(model.action) : tableContent(model as TableViewModel);
   // Outer structure from http://purecss.io/layouts/side-menu/
   render(
       html`<div id="layout" class=${activeClass('')}>
@@ -39,11 +37,23 @@ export function drawPage(model: ViewModel) {
           <h2>${model.subtitle}</h2>
         </div>
 
-        <div class="content" @click=${() => isActive && toggleActive()}>${content}</div>
+        <div class="content" @click=${() => isActive && toggleActive()}>${content()}</div>
       </div>
     </div>
 `,
       document.body);
+
+  function content(): TemplateResult {
+    switch (model.type) {
+      case 'action':
+        return actionContent((model as ActionViewModel).action);
+      case 'meta':
+        return tableMeta(model as MetaViewModel);
+      case 'table':
+      default:
+        return tableContent(model as TableViewModel);
+    }
+  }
 
   function toggleActive() {
     isActive = !isActive;
