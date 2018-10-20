@@ -1,6 +1,7 @@
 
 import {PageSpec} from '../../js/pageSpec.js';
-import {BASIC_MODEL, currentViewModel, setCurrentViewModelToListing, setCurrentViewModelToTable} from '../../js/viewModel.js';
+import {BASIC_MODEL, currentViewModel, setCurrentViewModelToListing, setCurrentViewModelToTable, TableViewModel} from '../../js/viewModel.js';
+
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 
 
@@ -36,8 +37,8 @@ describe('ViewModel', () => {
 
     currentViewModel.subtitle!.should.equal('Hello world');
     currentViewModel.should.not.haveOwnProperty('tableId');
-    currentViewModel.tableHead.should.deep.equal(sqlResponse.columns);
-    currentViewModel.tableBody.should.deep.equal(sqlResponse.rows);
+    (currentViewModel as TableViewModel).tableHead.should.deep.equal(sqlResponse.columns);
+    (currentViewModel as TableViewModel).tableBody.should.deep.equal(sqlResponse.rows);
   });
   it('sets currentViewModel to table', () => {
     const table = {'tableId': 'T', 'name': 'data1.csv', 'description': 'This is not data'};

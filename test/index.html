@@ -1,12 +1,24 @@
-<!doctype html>
 <html>
 <head>
-  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
-  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <meta charset="utf-8">
+  <title>Mocha Tests</title>
+  <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
 </head>
 <body>
-  <script>window.should = chai.should();</script>
+  <div id="mocha"></div>
+
+  <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/mocha/mocha.js"></script>
+
+  <script>mocha.setup('bdd')</script>
+  <script>window.should = chai.should()</script>
   <script type="module" src="./js/pageSpec_test.js"></script>
   <script type="module" src="./js/viewModel_test.js"></script>
+  <script>
+    window.onload = function () {
+      mocha.checkLeaks();
+      mocha.run();
+    };
+  </script>
 </body>
 </html>

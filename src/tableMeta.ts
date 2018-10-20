@@ -110,7 +110,7 @@ export function tableMeta(model: MetaViewModel): TemplateResult {
     <div class="pure-form pure-form-aligned">
       ${factory}
     </div>
-    <div class="pure-button-primary pure-button" 
+    <div class="pure-button-primary pure-button"
       ?disabled=${!model.isDirty}
       @click=${model.saveChanges}>Save changes</div>`;
 

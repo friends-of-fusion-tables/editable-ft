@@ -56,11 +56,11 @@ const linePerItem: ValueEditorFactory = (value, updateValue, onchange) => html`
   onchange(e);
 }}>${(value || []).join('\n')}</textarea>`;
 
-const checkbox: (advice: RenderAdvice) => ValueEditorFactory = (advice) =>
+const checkbox: (advice: RenderAdvice) => ValueEditorFactory = advice =>
     (value, updateValue, onchange) => html`
-  <input 
-    type="checkbox" 
-    class="pure-input" 
+  <input
+    type="checkbox"
+    class="pure-input"
     ?checked=${value}
     ?readOnly=${advice.readOnly === true}
     @change=${(e: Event) => {
@@ -68,11 +68,11 @@ const checkbox: (advice: RenderAdvice) => ValueEditorFactory = (advice) =>
       onchange(e);
     }}>`;
 
-const numberInput: (advice: RenderAdvice) => ValueEditorFactory = (advice) =>
+const numberInput: (advice: RenderAdvice) => ValueEditorFactory = advice =>
     (value, updateValue, onchange) => html`
-  <input 
-    type="text" 
-    class="pure-input-1-2" 
+  <input
+    type="text"
+    class="pure-input-1-2"
     value=${value || advice.default || 0}
     ?readOnly=${!!advice.readOnly}
     pattern="^-?\d*\.?\d*$"
@@ -81,11 +81,11 @@ const numberInput: (advice: RenderAdvice) => ValueEditorFactory = (advice) =>
       onchange(e);
     }}>`;
 
-const textInput: (advice: StringRenderAdvice) => ValueEditorFactory = (advice) =>
+const textInput: (advice: StringRenderAdvice) => ValueEditorFactory = advice =>
     (value, updateValue, onchange) => html`
-  <input 
-    type="text" 
-    class="pure-input-1-2" 
+  <input
+    type="text"
+    class="pure-input-1-2"
     value=${value}
     ?readOnly=${!!advice.readOnly}
     pattern=${advice.pattern || '.*'}
@@ -96,16 +96,16 @@ const textInput: (advice: StringRenderAdvice) => ValueEditorFactory = (advice) =
       onchange(e);
     }}>`;
 
-const selectInput: (advice: StringRenderAdvice) => ValueEditorFactory = (advice) =>
+const selectInput: (advice: StringRenderAdvice) => ValueEditorFactory = advice =>
     (value, updateValue, onchange) => html`
-  <select 
-    class="pure-input-1-2" 
+  <select
+    class="pure-input-1-2"
     ?readOnly=${!!advice.readOnly}
     @change=${(e: Event) => {
       updateValue((e.target as HTMLSelectElement).value);
       onchange(e);
     }}>
-    ${(advice.enum || []).map(e => html`<option ?selected=${e == value}>${e}</option>`)}
+    ${(advice.enum || []).map(e => html`<option ?selected=${e === value}>${e}</option>`)}
   </select>`;
 
 function stringInputFactory(advice: StringRenderAdvice): ValueEditorFactory {
@@ -206,7 +206,7 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
           propertiesValueEditorFactory(advice as ObjectRenderAdvice));
     case 'array':
       const arrayAdvice = advice as ArrayRenderAdvice;
-      if (arrayAdvice.items.type == 'string') {
+      if (arrayAdvice.items.type === 'string') {
         const itemAdvice = arrayAdvice.items as StringRenderAdvice;
         if (!itemAdvice.enum && !itemAdvice.pattern && !itemAdvice.readOnly) {
           return asFactory(controlGroupWithLinePerItemLegend(advice))(linePerItem);
@@ -224,10 +224,10 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
       let updateFor = (key: string) => (v: any) => value[key] = v;
       if (!value) {
         value = {};
-        updateFor = (key) => (v) => {
+        updateFor = key => v => {
           value[key] = v;
           updateValue(value);
-        }
+        };
       }
       const jsonWrapper: {[key: string]: HtmlOperator} = {};
       return html
@@ -382,7 +382,7 @@ export function renderAdvice(schema: {[key: string]: any}, columns: string[]) {
           }
           break;
         case 'string':
-          return schema.enum && schema.enum.length === 1 && schema.enum[0] == '$columns' ?
+          return schema.enum && schema.enum.length === 1 && schema.enum[0] === '$columns' ?
               {...schema, type: 'string', 'enum': columns, 'default': columns[0]} as RenderAdvice :
               schema as RenderAdvice;
         case 'boolean':
