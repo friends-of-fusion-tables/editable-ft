@@ -33,7 +33,7 @@ export interface StringRenderAdvice extends RenderAdvice {
  * A value editor is a TemplateResult with bound value, which is edited, and callbacks.
  * @param updateValue called with new value to update
  * @param onchange will be called after something changed
- * @param redraw to re-render after some change
+ * @param redraw requests re-render, for expanding and collapsing
  */
 export type ValueEditorFactory =
     (value: any, updateValue: (v: any) => void, onchange: (e: Event) => void, redraw: () => void) =>

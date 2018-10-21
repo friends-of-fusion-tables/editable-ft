@@ -10,6 +10,7 @@ export interface ViewModel {
   menu: {item: string, link: string}[];
   title?: string;
   subtitle?: string;
+  feedback?: string;
 
   redrawPage(): void;
   routeToPage(pageSpec: PageSpec): void;
@@ -114,7 +115,7 @@ export function setCurrentViewModelToTable(
     onRowChanged,
     editFilterLink
   } as TableViewModel;
-  viewModel.menu.push({item: 'Metadata', link: hash({tableId, meta: []})});
+  viewModel.menu = [...viewModel.menu, {item: 'Metadata', link: hash({tableId, meta: []})}];
   currentViewModel = addRows(viewModel, rowResponse);
   return currentViewModel;
 
@@ -177,9 +178,7 @@ export function setCurrentViewModelToTable(
   }
 }
 
-/**
- * Returns ViewModel for metadata of loaded table.
- */
+/** Returns ViewModel for metadata of loaded table. */
 export function setCurrentViewModelToMeta(table: Table, toCopy: ViewModel = BASIC_MODEL) {
   const {name, description} = table;
   const tableId = table.tableId!;
@@ -190,7 +189,15 @@ export function setCurrentViewModelToMeta(table: Table, toCopy: ViewModel = BASI
 
   function saveChanges() {
     if (model.isDirty) {
-      gapi.client.fusiontables.table.update({tableId, resource: table});
+      gapi.client.fusiontables.table.update({tableId, resource: table}).execute(resp => {
+        console.log('Update metadata response ' + JSON.stringify(resp));
+        model.feedback = resp.statusText;
+        model.isDirty = false;
+        // TODO. This is brittle. Figure out a better way to update model.
+        model.title = table.name;
+        model.subtitle = table.description;
+        toCopy.redrawPage();
+      });
     }
   }
 }

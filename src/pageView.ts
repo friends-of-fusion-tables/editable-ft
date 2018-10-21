@@ -32,7 +32,7 @@ export function drawPage(model: ViewModel) {
 
       <div id="main">
         <div class="header">
-        <span>Success</span>
+        <span>${model.feedback}</span>
           <h1>${model.title}</h1>
           <h2>${model.subtitle}</h2>
         </div>
