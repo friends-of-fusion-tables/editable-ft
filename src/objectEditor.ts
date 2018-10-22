@@ -1,5 +1,29 @@
 import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
-
+/* Design notes
+ *
+ * The objective is editing Javascript objects with a presentation that can be progressively
+ * improved.
+ *
+ * The fallback is a textarea with JSON string. The presentation can be enriched with render advice,
+ * which is akin to JSON schema. Render advice supplies text for title and description as well as
+ * enum values for choices, and constraints for validated input. The presentation can also be
+ * delegated to a custom editor.
+ *
+ * An editor consist of an HTML element with bound callbacks for updating and change notification.
+ * Formally, it is just a TemplateResult. The formal type for a factory of editors,
+ * ValueEditorFactory, takes a value and the callbacks to produce the editor. The implementation
+ * of a ValueEditorFactory is non-obvious for two reasons:
+ *
+ * First, factories may be called again, when the page is re-drawn. Stateful editors will break, if
+ * we return an "equivalent", new editor rather than reusing the previously returned editor
+ * instance. For the same reason it is also important to reuse factory instances.
+ *
+ * Second, it is possible that the true value to edit is different from the object bound in the
+ * editor instance. Specifically, the value we wish to edit might be a string with structure that we
+ * model as an object. This breaks when an editor merely updates the Javascript object in place and
+ * omits the update callback. Everything will work just fine for real Javascript objects, but an
+ * edited string value will remain unchanged.
+ */
 /**
  * Family of types to enrich the editor. Deliberately similar to JSON schema found in Fusion
  * Tables.
@@ -54,6 +78,7 @@ const jsonTextarea: ValueEditorFactory = (value, updateValue, onchange) => html`
 }}>${JSON.stringify(value)}
   </textarea>`;
 
+/** Creates special editors for string[], presented as one item per line. */
 const linePerItem: ValueEditorFactory = (value, updateValue, onchange) => html`
   <textarea class="pure-input-1-2" @change=${(e: Event) => {
   updateValue((e.target as HTMLTextAreaElement).value.split('\n'));
@@ -66,7 +91,7 @@ const checkbox: (advice: RenderAdvice) => ValueEditorFactory = advice =>
     type="checkbox"
     class="pure-input"
     ?checked=${value}
-    ?readOnly=${advice.readOnly === true}
+    ?readOnly=${!!advice.readOnly}
     @change=${(e: Event) => {
       updateValue((e.target as HTMLInputElement).checked);
       onchange(e);
@@ -112,18 +137,16 @@ const selectInput: (advice: StringRenderAdvice) => ValueEditorFactory = advice =
     ${(advice.enum || []).map(e => html`<option ?selected=${e === value}>${e}</option>`)}
   </select>`;
 
-function stringInputFactory(advice: StringRenderAdvice): ValueEditorFactory {
-  return advice.enum ? selectInput(advice) : textInput(advice);
-}
+const stringInputFactory = (advice: StringRenderAdvice) =>
+    advice.enum ? selectInput(advice) : textInput(advice);
 
 /** The type of HTML wrappers, like collapsible editor and control group. */
 type HtmlOperator = (html: TemplateResult, redraw: () => void) => TemplateResult;
+type FactoryOperator = (f: ValueEditorFactory) => ValueEditorFactory;
 
-/** Returns a ValueEditorFactory operator that applies the given HTML operator on its result. */
-function asFactory(op: HtmlOperator): (f: ValueEditorFactory) => ValueEditorFactory {
-  return f => (value, updateValue, onchange, redraw) =>
-             op(f(value, updateValue, onchange, redraw), redraw);
-}
+/** Returns a FactoryOperator that applies the given HtmlOperator on a factory result. */
+const asFactory: (op: HtmlOperator) => FactoryOperator = op => f =>
+    (value, updateValue, onchange, redraw) => op(f(value, updateValue, onchange, redraw), redraw);
 
 /**
  * Returns HTML for a group. In the context of pure-form-aligned, the title will be right aligned on
@@ -139,9 +162,8 @@ const controlGroup: (adviceLike: {title?: string, description?: string}, extraMe
     </span>
   </div>`;
 
-function controlGroupWithLinePerItemLegend(advice: RenderAdvice): HtmlOperator {
-  return controlGroup(advice, 'Enter one item per line');
-}
+const controlGroupWithLinePerItemLegend = (advice: RenderAdvice) =>
+    controlGroup(advice, 'Enter one item per line');
 
 const inputListItem: (removeItem: () => void) => HtmlOperator = removeItem => input => html`
     <div class="pure-control-group">
@@ -151,6 +173,8 @@ const inputListItem: (removeItem: () => void) => HtmlOperator = removeItem => in
       </span>
      </div>`;
 
+const DOWN_TRIANGLE = html`&#9662;`;
+const RIGHT_TRIANGLE = html`&#9656;`;
 /**
  * Returns factory for HTML of a full width button that contains the given title and description.
  * The button toggles the visibility of some inner HTML.
@@ -165,7 +189,7 @@ const collapsibleEditor: (advice: RenderAdvice) => HtmlOperator =
         }}>
   ${title}
   <span class="pure-form-message-inline">${description}</span>
-  ${expanded ? html`&#9662;` : html`&#9656;`}
+  ${expanded ? DOWN_TRIANGLE : RIGHT_TRIANGLE}
   </div>
   <span style=${expanded ? '' : 'display:none'}>
   ${inner}
@@ -186,7 +210,7 @@ const collapsibleListItemEditor: (advice: RenderAdvice, removeItem: () => void) 
         }}>
   ${title}
   <span class="pure-form-message-inline">${description}</span>
-  ${expanded ? html`&#9662;` : html`&#9656;`}
+  ${expanded ? DOWN_TRIANGLE : RIGHT_TRIANGLE}
   </div><span class="pure-button" style="border-radius:50%" @click=${removeItem}>
             &#x00D7;
           </span>
@@ -284,7 +308,6 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
             <span class="pure-button" style="border-radius:50%" @click=${newItem}>&#x002B;</span>
           </div>
         </fieldset>`;
-
 
         function itemEditor(item: any, i: number, a: any[]): TemplateResult {
           if (editors.length <= i) {
