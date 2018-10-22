@@ -115,7 +115,7 @@ const stringAsObject = (title: string, advice?: ObjectRenderAdvice) => {
   const objectEditorFactory = valueEditorFactory({...advice, title});
   const stringObjectAdapter: ValueEditorFactory = (value, updateValue, onchange, redraw) =>
       objectEditorFactory(
-          JSON.parse(value as string), v => updateValue(JSON.stringify(v)), onchange, redraw);
+          JSON.parse(value || '{}'), v => updateValue(JSON.stringify(v)), onchange, redraw);
   return {type: 'string', title, customEditor: stringObjectAdapter} as StringRenderAdvice;
 };
 
