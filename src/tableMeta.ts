@@ -1,10 +1,9 @@
 import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
-import {ArrayRenderAdvice, ObjectRenderAdvice, StringRenderAdvice, valueEditorFactory} from './objectEditor.js';
+import {ArrayRenderAdvice, ObjectRenderAdvice, renderAdvice, StringRenderAdvice, valueEditorFactory, ValueEditorFactory} from './objectEditor.js';
 import {redrawPage} from './pageView.js';
 import {MetaViewModel} from './viewModel.js';
 
-// Based on
-// https://developers.google.com/fusiontables/docs/v2/reference/column
+// Based on https://developers.google.com/fusiontables/docs/v2/reference/column
 const columnAdvice: ObjectRenderAdvice = {
   type: 'object',
   properties: {
@@ -80,9 +79,48 @@ const columnAdvice: ObjectRenderAdvice = {
     kind: {type: 'string', display: false}
   }
 };
+/*
+const basicSchemaRenderAdvice: ObjectRenderAdvice = {
+  type: 'object',
+  properties: {
+    type: {type: 'string', enum: ['object', 'array', 'string', 'boolean', 'number']} as
+        StringRenderAdvice,
+    title: {type: 'string'},
+    description: {type: 'string'},
+    display: {type: 'boolean'},
+    readOnly: {type: 'boolean'},
+    pattern: {type: 'string'},
+    maxLength: {type: 'number'},
+    minLength: {type: 'number'},
+    enum: {type: 'array', items: {type: 'string'}} as ArrayRenderAdvice
+  }
+};
+const schemaValueEditorFactory = valueEditorFactory(basicSchemaRenderAdvice);
+
+// Schema arrives as string, not object.
+const schemaEditor: ValueEditorFactory = (value, updateValue, onchange, redraw) =>
+    schemaValueEditorFactory(
+        JSON.parse(value as string), v => updateValue(JSON.stringify(v)), onchange, redraw);
+*/
+
+/**
+ * Editor for strings that should be treated like objects. Parsed before editing and stringified on
+ * update.
+ *
+ * @param title replacement for title from render advice
+ * @param advice rendering advice for the parsed object
+ */
+const stringAsObject = (title: string, advice?: ObjectRenderAdvice) => {
+  if (!advice) advice = {type: 'object', properties: {}} as ObjectRenderAdvice;
+  const objectEditorFactory = valueEditorFactory({...advice, title});
+  const stringObjectAdapter: ValueEditorFactory = (value, updateValue, onchange, redraw) =>
+      objectEditorFactory(
+          JSON.parse(value as string), v => updateValue(JSON.stringify(v)), onchange, redraw);
+  return {type: 'string', title, customEditor: stringObjectAdapter} as StringRenderAdvice;
+};
 
 // Based on https://developers.google.com/fusiontables/docs/v2/reference/table
-const tableAdvice: ObjectRenderAdvice = {
+const genericTableAdvice: ObjectRenderAdvice = {
   type: 'object',
   title: 'Table properties',
   expanded: true,
@@ -96,20 +134,40 @@ const tableAdvice: ObjectRenderAdvice = {
     attributionLink: {type: 'string', title: 'Attribution link'},
     baseTableIds: {type: 'array', display: false},
     kind: {type: 'string', display: false},
-    columnPropertiesJsonSchema: {type: 'string', display: false},
+    tablePropertiesJson: stringAsObject('Custom Properties'),
     isExportable: {title: 'Exportable?', type: 'boolean'},
     columns: {type: 'array', title: 'Columns', display: false, items: columnAdvice} as
-        ArrayRenderAdvice
+        ArrayRenderAdvice,
+    tablePropertiesJsonSchema: stringAsObject('Properties Schema'),
+    columnPropertiesJsonSchema: stringAsObject('Column Properties Schema')
   }
 };
 
-const editorFactory = valueEditorFactory(tableAdvice);
-
+const tableAdvice = (table: gapi.client.fusiontables.Table) =>
+    !table.tablePropertiesJsonSchema || table.tablePropertiesJsonSchema == '' ?
+    genericTableAdvice :
+    {
+      ...genericTableAdvice,
+      properties: {
+        ...genericTableAdvice.properties,
+        tablePropertiesJson: stringAsObject(
+            'Custom Properties',
+            renderAdvice(
+                JSON.parse(table.tablePropertiesJsonSchema),
+                (table.columns || []).map(c => c.name || '')) as ObjectRenderAdvice)
+      }
+    };
+var editorFactory: ValueEditorFactory|undefined;
+var editorFactoryId: string|undefined;
 export function tableMeta(model: MetaViewModel): TemplateResult {
-  const factory: TemplateResult = editorFactory(model.table, updateValue, onchange, redrawPage);
+  if (!editorFactory || !editorFactoryId || model.table.tableId != editorFactoryId) {
+    editorFactory = valueEditorFactory(tableAdvice(model.table));
+    editorFactoryId = model.table.tableId;
+  }
+  const editor = editorFactory(model.table, updateValue, onchange, redrawPage);
   return html`
     <div class="pure-form pure-form-aligned">
-      ${factory}
+      ${editor}
     </div>
     <div class="pure-button-primary pure-button"
       ?disabled=${!model.isDirty}

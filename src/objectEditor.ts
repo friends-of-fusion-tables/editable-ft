@@ -12,6 +12,7 @@ export interface RenderAdvice {
   readOnly?: boolean;
   default?: any;
   expanded?: boolean;
+  customEditor?: ValueEditorFactory;
 }
 export interface ObjectRenderAdvice extends RenderAdvice {
   type: 'object';
@@ -41,6 +42,9 @@ export type ValueEditorFactory =
 
 /** A value editor factory for keeping values hidden. */
 const HIDING_VALUE_EDITOR_FACTORY: ValueEditorFactory = () => html``;
+
+/** Pseudo change event for removing an item from a list. */
+const ITEM_REMOVED_EVENT = new Event('Item removed');
 
 /** The basic value editor uses JSON.stringify and JSON.parse. */
 const jsonTextarea: ValueEditorFactory = (value, updateValue, onchange) => html`
@@ -200,6 +204,9 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
   if (advice.display === false) {
     return HIDING_VALUE_EDITOR_FACTORY;
   }
+  if (advice.customEditor) {
+    return advice.customEditor;
+  }
   switch (advice.type) {
     case 'object':
       return asFactory(collapsibleEditor(advice))(
@@ -219,16 +226,16 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
 
   function propertiesValueEditorFactory({properties}: ObjectRenderAdvice): ValueEditorFactory {
     const factory: {[key: string]: ValueEditorFactory} = {};
-    Object.keys(properties).forEach(k => factory[k] = valueEditorFactory(properties[k]));
+    const withFallbackTitle = (title: string, advice: RenderAdvice) =>
+        advice.title ? advice : {...advice, title};
+    Object.keys(properties)
+        .forEach(k => factory[k] = valueEditorFactory(withFallbackTitle(k, properties[k])));
     return (value, updateValue, onchange, redraw) => {
-      let updateFor = (key: string) => (v: any) => value[key] = v;
-      if (!value) {
-        value = {};
-        updateFor = key => v => {
-          value[key] = v;
-          updateValue(value);
-        };
-      }
+      if (!value) value = {};
+      const updateFor = (key: string) => (v: any) => {
+        value[key] = v;
+        updateValue(value);
+      };
       const jsonWrapper: {[key: string]: HtmlOperator} = {};
       return html
       `${Object.keys(factory).map(k => factory[k](value[k], updateFor(k), onchange, redraw))}
@@ -288,14 +295,14 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
 
         function updateAt(a: any[], i: number, v: any) {
           a[i] = v;
-          if (!value) {
-            updateValue(a);
-          }
+          updateValue(a);
         }
 
         function remove(a: any[], i: number) {
           a.splice(i, 1);
           editors.splice(i, 1);
+          updateValue(a);
+          onchange(ITEM_REMOVED_EVENT);
           redraw();
         }
 
@@ -303,6 +310,7 @@ export function valueEditorFactory(advice: RenderAdvice): ValueEditorFactory {
           const v = itemAdvice.default || '';
           if (value) {
             value.push(v);
+            updateValue(value);
           } else {
             updateValue([v]);
           }
