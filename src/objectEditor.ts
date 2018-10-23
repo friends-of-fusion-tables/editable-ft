@@ -1,4 +1,4 @@
-import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
+import {html, TemplateResult} from '../node_modules/lit-html/lit-html';
 /* Design notes
  *
  * The objective is editing Javascript objects with a presentation that can be progressively

@@ -17,7 +17,7 @@ the demo uses a shared API key with freebie quota.
 4.  [Install npm](https://www.npmjs.com/get-npm)
 5.  Install http server and webpack globally
 ```bash
-npm install -g webpack webpack-cli http-server
+npm install -g http-server
 ```
 6.  Update local node repository
 ```bash
@@ -25,7 +25,7 @@ npm update
 ```
 7.  Build and run a local demo
 ```bash
-npm run build
+npm run dev
 npm run run
 ```
-8.  Open http://localhost:8080/debug.html
+8.  Open http://localhost:8080

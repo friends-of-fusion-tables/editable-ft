@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PageSpec, parseToCurrentPageSpec, whereClauses} from './pageSpec.js';
-import {drawPage} from './pageView.js';
-import {currentViewModel, LOADING, LOGIN, setCurrentViewModelToListing, setCurrentViewModelToTable} from './viewModel.js';
+import {PageSpec, parseToCurrentPageSpec, whereClauses} from './pageSpec';
+import {drawPage} from './pageView';
+import {currentViewModel, LOADING, LOGIN, setCurrentViewModelToListing, setCurrentViewModelToTable} from './viewModel';
 
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
-import {setCurrentViewModelToMeta} from './viewModel.js';
+import {setCurrentViewModelToMeta} from './viewModel';
 
 gapi.load('client:auth2', () => {
   gapi.client

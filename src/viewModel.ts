@@ -1,7 +1,7 @@
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 import Table = gapi.client.fusiontables.Table;
-import {currentPageSpec, PageSpec, hash} from './pageSpec.js';
-import {drawPage} from './pageView.js';
+import {currentPageSpec, PageSpec, hash} from './pageSpec';
+import {drawPage} from './pageView';
 
 /** Data and behavior backing the view. */
 export interface ViewModel {

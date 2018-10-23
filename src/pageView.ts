@@ -1,7 +1,7 @@
-import {html, render, TemplateResult} from '../node_modules/lit-html/lit-html.js';
-import {tableContent} from './tableContent.js';
-import {tableMeta} from './tableMeta.js';
-import {ActionViewModel, ButtonSpec, currentViewModel, MetaViewModel, TableViewModel, ViewModel} from './viewModel.js';
+import {html, render, TemplateResult} from '../node_modules/lit-html/lit-html';
+import {tableContent} from './tableContent';
+import {tableMeta} from './tableMeta';
+import {ActionViewModel, ButtonSpec, currentViewModel, MetaViewModel, TableViewModel, ViewModel} from './viewModel';
 
 /** Active slides out menu for small screens. See side-menu.css */
 let isActive = false;

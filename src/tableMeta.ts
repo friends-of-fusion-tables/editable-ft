@@ -1,7 +1,7 @@
-import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
-import {ArrayRenderAdvice, ObjectRenderAdvice, renderAdvice, StringRenderAdvice, valueEditorFactory, ValueEditorFactory} from './objectEditor.js';
-import {redrawPage} from './pageView.js';
-import {MetaViewModel} from './viewModel.js';
+import {html, TemplateResult} from '../node_modules/lit-html/lit-html';
+import {ArrayRenderAdvice, ObjectRenderAdvice, renderAdvice, StringRenderAdvice, valueEditorFactory, ValueEditorFactory} from './objectEditor';
+import {redrawPage} from './pageView';
+import {MetaViewModel} from './viewModel';
 
 // Based on https://developers.google.com/fusiontables/docs/v2/reference/column
 const columnAdvice: ObjectRenderAdvice = {

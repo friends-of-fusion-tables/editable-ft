@@ -1,8 +1,8 @@
-import {html, TemplateResult} from '../node_modules/lit-html/lit-html.js';
+import {html, TemplateResult} from '../node_modules/lit-html/lit-html';
 
-import {currentPageSpec, hash, PageSpec} from './pageSpec.js';
-import {redrawPage} from './pageView.js';
-import {FilterEditorModel, TableViewModel, ValueFilter} from './viewModel.js';
+import {currentPageSpec, hash, PageSpec} from './pageSpec';
+import {redrawPage} from './pageView';
+import {FilterEditorModel, TableViewModel, ValueFilter} from './viewModel';
 
 /** Encapsulates differences between editing and viewing a table cell. */
 interface CellHandler {

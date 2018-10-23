@@ -11,5 +11,5 @@ esac
 
 "${SED[@]}" -e s/YOUR_API_KEY/$(cat api.key)/ -e s/YOUR_CLIENT_ID/$(cat client.id)/ js/main.js
 
-rollup -c
+rollup -c $([[ -n "$2" ]] && echo rollup.dev-config.js)
 
