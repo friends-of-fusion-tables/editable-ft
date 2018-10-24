@@ -1,6 +1,6 @@
-import {hash, PageSpec, parseToCurrentPageSpec} from '../../js/pageSpec.js';
-import {drawPage} from '../../js/pageView.js';
-import {BASIC_MODEL, setCurrentViewModelToTable, ViewModel} from '../../js/viewModel.js';
+import {hash, PageSpec, parseToCurrentPageSpec} from '../../js/pageSpec';
+import {drawPage} from '../../js/pageView';
+import {BASIC_MODEL, setCurrentViewModelToTable, ViewModel} from '../../js/viewModel';
 
 interface Sqlresponse {}
 interface Table {

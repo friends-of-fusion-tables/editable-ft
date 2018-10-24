@@ -2,23 +2,19 @@
 <head>
   <meta charset="utf-8">
   <title>Mocha Tests</title>
-  <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+  <link href="../node_modules/mocha/mocha.css" rel="stylesheet"/>
 </head>
 <body>
-  <div id="mocha"></div>
+<div id="mocha"></div>
 
-  <script src="../node_modules/chai/chai.js"></script>
-  <script src="../node_modules/mocha/mocha.js"></script>
-
-  <script>mocha.setup('bdd')</script>
-  <script>window.should = chai.should()</script>
-  <script type="module" src="./js/pageSpec_test.js"></script>
-  <script type="module" src="./js/viewModel_test.js"></script>
-  <script>
-    window.onload = function () {
-      mocha.checkLeaks();
-      mocha.run();
-    };
-  </script>
+<script src="../node_modules/chai/chai.js"></script>
+<script src="../node_modules/mocha/mocha.js"></script>
+<script>mocha.setup('bdd')</script>
+<script>window.should = chai.should()</script>
+<script src="./dist/all.js"></script>
+<script>
+  mocha.checkLeaks();
+  mocha.run();
+</script>
 </body>
 </html>

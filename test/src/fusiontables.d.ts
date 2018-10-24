@@ -1,0 +1,1 @@
+../../src/fusiontables.d.ts

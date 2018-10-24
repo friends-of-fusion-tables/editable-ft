@@ -144,7 +144,7 @@ const genericTableAdvice: ObjectRenderAdvice = {
 };
 
 const tableAdvice = (table: gapi.client.fusiontables.Table) =>
-    !table.tablePropertiesJsonSchema || table.tablePropertiesJsonSchema == '' ?
+    !table.tablePropertiesJsonSchema || table.tablePropertiesJsonSchema === '' ?
     genericTableAdvice :
     {
       ...genericTableAdvice,
@@ -157,10 +157,10 @@ const tableAdvice = (table: gapi.client.fusiontables.Table) =>
                 (table.columns || []).map(c => c.name || '')) as ObjectRenderAdvice)
       }
     };
-var editorFactory: ValueEditorFactory|undefined;
-var editorFactoryId: string|undefined;
+let editorFactory: ValueEditorFactory|undefined;
+let editorFactoryId: string|undefined;
 export function tableMeta(model: MetaViewModel): TemplateResult {
-  if (!editorFactory || !editorFactoryId || model.table.tableId != editorFactoryId) {
+  if (!editorFactory || !editorFactoryId || model.table.tableId !== editorFactoryId) {
     editorFactory = valueEditorFactory(tableAdvice(model.table));
     editorFactoryId = model.table.tableId;
   }

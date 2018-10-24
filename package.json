@@ -13,11 +13,10 @@
   "scripts": {
     "build": "scripts/build.sh main",
     "dev": "scripts/build.sh main development",
-    "test": "npm run dev && cd test && ../scripts/build.sh simpleTable development",
     "run": "pgrep http-server || http-server -p 8080",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
-    "mocha": "pushd test; tsc; popd; node_modules/opn/xdg-open http://localhost:8080/test"
+    "mocha": "tsc; pushd test; tsc; rollup -f esm -i js/all.js -o dist/all.js --sourcemap; popd; node_modules/opn/xdg-open http://localhost:8080/test"
   },
   "devDependencies": {
     "@types/chai": "^4.1.6",
