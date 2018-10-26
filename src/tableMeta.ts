@@ -157,14 +157,25 @@ const tableAdvice = (table: gapi.client.fusiontables.Table) =>
                 (table.columns || []).map(c => c.name || '')) as ObjectRenderAdvice)
       }
     };
-let editorFactory: ValueEditorFactory|undefined;
+
+const advice = (table: gapi.client.fusiontables.Table, column?: string) =>
+    column ? columnAdvice : tableAdvice(table);
+let factoryByColumn: {[key: string]: ValueEditorFactory} = {};
 let editorFactoryId: string|undefined;
 export function tableMeta(model: MetaViewModel): TemplateResult {
-  if (!editorFactory || !editorFactoryId || model.table.tableId !== editorFactoryId) {
-    editorFactory = valueEditorFactory(tableAdvice(model.table));
-    editorFactoryId = model.table.tableId;
+  const {table, column} = model;
+  if (table.tableId !== editorFactoryId) {
+    factoryByColumn = {};
+    editorFactoryId = table.tableId;
   }
-  const editor = editorFactory(model.table, updateValue, onchange, redrawPage);
+  const key = column || '';
+  const factory =
+      factoryByColumn[key] || (factoryByColumn[key] = valueEditorFactory(advice(table, column)));
+  const editor = factory(
+      column ? table.columns!.find(c => c.name === column) : table,
+      updateValue,
+      onchange,
+      redrawPage);
   return html`
     <div class="pure-form pure-form-aligned">
       ${editor}

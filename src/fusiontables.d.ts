@@ -783,7 +783,7 @@ declare namespace gapi.client {
            IP address of the site where the request originates. Use this if you
            want to enforce per-user limits.
          */
-        userIp?: string;
+        userIp?: string; resource: Column;
       }): Request<Column>;
     }
     interface QueryResource {
@@ -1523,7 +1523,7 @@ declare namespace gapi.client {
          */
         userIp?: string;
 
-        resource?: Table;
+        resource: Table;
       }): Request<Table>;
     }
     interface TaskResource {

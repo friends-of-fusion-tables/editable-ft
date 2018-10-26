@@ -73,7 +73,7 @@ function viewModel(spec: PageSpec) {
         query('select ROWID ' + querySuffix),
         queryFilterValues()
       ]);
-      const model = meta ? setCurrentViewModelToMeta(table.result) :
+      const model = meta ? setCurrentViewModelToMeta(table.result, meta) :
                            setCurrentViewModelToTable(
                                table.result,
                                rowResult.result,

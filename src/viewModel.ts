@@ -1,5 +1,6 @@
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 import Table = gapi.client.fusiontables.Table;
+import Column = gapi.client.fusiontables.Column;
 import {currentPageSpec, PageSpec, hash} from './pageSpec';
 import {drawPage} from './pageView';
 
@@ -29,6 +30,7 @@ export interface ButtonSpec {
 export interface MetaViewModel extends ViewModel {
   type: 'meta';
   table: gapi.client.fusiontables.Table;
+  column?: string;
   isDirty?: boolean;
   onchange: () => void;
   saveChanges: () => void;
@@ -179,26 +181,49 @@ export function setCurrentViewModelToTable(
 }
 
 /** Returns ViewModel for metadata of loaded table. */
-export function setCurrentViewModelToMeta(table: Table, toCopy: ViewModel = BASIC_MODEL) {
+export function setCurrentViewModelToMeta(
+    table: Table, meta: string[], toCopy: ViewModel = BASIC_MODEL) {
   const {name, description} = table;
+  const [column] = meta;
   const tableId = table.tableId!;
-  const model = {...toCopy, type: 'meta', title: name, subtitle: description, table, saveChanges} as
-      MetaViewModel;
+  const menu = [
+    ...toCopy.menu,
+    ...(table.columns || [])
+        .filter(c => c.name)
+        .map(c => ({item: c.name, link: hash({tableId, meta: [c.name!]})}))
+  ];
+  const model = {
+    ...toCopy,
+    type: 'meta',
+    title: name,
+    subtitle: description,
+    menu,
+    table,
+    column,
+    saveChanges
+  } as MetaViewModel;
   currentViewModel = model;
   return model;
 
   function saveChanges() {
     if (model.isDirty) {
-      gapi.client.fusiontables.table.update({tableId, resource: table}).execute(resp => {
+      update().execute(resp => {
         console.log('Update metadata response ' + JSON.stringify(resp));
         model.feedback = resp.statusText;
         model.isDirty = false;
         // TODO. This is brittle. Figure out a better way to update model.
         model.title = table.name;
         model.subtitle = table.description;
-        toCopy.redrawPage();
+        model.redrawPage();
       });
     }
+  }
+  function update(): gapi.client.Request<Table|Column> {
+    if (column) {
+      const resource = table.columns!.find(c => c.name === column)!;
+      return gapi.client.fusiontables.column.update({tableId, columnId: resource.name!, resource});
+    }
+    return gapi.client.fusiontables.table.update({tableId, resource: table});
   }
 }
 

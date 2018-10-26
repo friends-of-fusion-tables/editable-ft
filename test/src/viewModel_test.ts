@@ -1,6 +1,6 @@
 
-import {BASIC_MODEL, currentViewModel, setCurrentViewModelToListing, setCurrentViewModelToTable, TableViewModel} from '../../js/viewModel';
 import {PageSpec} from '../../js/pageSpec';
+import {BASIC_MODEL, currentViewModel, setCurrentViewModelToListing, setCurrentViewModelToTable, TableViewModel} from '../../js/viewModel';
 
 import Sqlresponse = gapi.client.fusiontables.Sqlresponse;
 
