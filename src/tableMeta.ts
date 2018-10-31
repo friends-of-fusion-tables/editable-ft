@@ -4,8 +4,10 @@ import {redrawPage} from './pageView';
 import {MetaViewModel} from './viewModel';
 
 // Based on https://developers.google.com/fusiontables/docs/v2/reference/column
-const columnAdvice: ObjectRenderAdvice = {
+const genericColumnAdvice: ObjectRenderAdvice = {
   type: 'object',
+  title: 'Column properties',
+  expanded: true, 
   properties: {
     name: {type: 'string', title: 'Name'},
     description: {type: 'string', title: 'Description'},
@@ -136,7 +138,7 @@ const genericTableAdvice: ObjectRenderAdvice = {
     kind: {type: 'string', display: false},
     tablePropertiesJson: stringAsObject('Custom Properties'),
     isExportable: {title: 'Exportable?', type: 'boolean'},
-    columns: {type: 'array', title: 'Columns', display: false, items: columnAdvice} as
+    columns: {type: 'array', title: 'Columns', display: false, items: genericColumnAdvice} as
         ArrayRenderAdvice,
     tablePropertiesJsonSchema: stringAsObject('Properties Schema'),
     columnPropertiesJsonSchema: stringAsObject('Column Properties Schema')
@@ -158,10 +160,26 @@ const tableAdvice = (table: gapi.client.fusiontables.Table) =>
       }
     };
 
+const columnAdvice = (table: gapi.client.fusiontables.Table) =>
+    !table.columnPropertiesJsonSchema || table.columnPropertiesJsonSchema === '' ?
+    genericColumnAdvice :
+    {
+      ...genericColumnAdvice,
+      properties: {
+        ...genericColumnAdvice.properties,
+        columnPropertiesJson: stringAsObject(
+            'Custom Properties',
+            renderAdvice(
+                JSON.parse(table.columnPropertiesJsonSchema),
+                (table.columns || []).map(c => c.name || '')) as ObjectRenderAdvice)
+      }
+    };
+
 const advice = (table: gapi.client.fusiontables.Table, column?: string) =>
-    column ? columnAdvice : tableAdvice(table);
+    column ? columnAdvice(table) : tableAdvice(table);
 let factoryByColumn: {[key: string]: ValueEditorFactory} = {};
 let editorFactoryId: string|undefined;
+
 export function tableMeta(model: MetaViewModel): TemplateResult {
   const {table, column} = model;
   if (table.tableId !== editorFactoryId) {
