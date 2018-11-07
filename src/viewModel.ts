@@ -188,6 +188,7 @@ export function setCurrentViewModelToMeta(
   const tableId = table.tableId!;
   const menu = [
     ...toCopy.menu,
+    {item: 'Metadata', link: hash({tableId, meta: []})},
     ...(table.columns || [])
         .filter(c => c.name)
         .map(c => ({item: c.name, link: hash({tableId, meta: [c.name!]})}))

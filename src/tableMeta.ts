@@ -7,7 +7,7 @@ import {MetaViewModel} from './viewModel';
 const genericColumnAdvice: ObjectRenderAdvice = {
   type: 'object',
   title: 'Column properties',
-  expanded: true, 
+  expanded: true,
   properties: {
     name: {type: 'string', title: 'Name'},
     description: {type: 'string', title: 'Description'},
