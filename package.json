@@ -16,7 +16,8 @@
     "run": "pgrep http-server || http-server -p 8080",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
-    "mocha": "tsc; pushd test; tsc; rollup -f esm -i js/all.js -o dist/all.js --sourcemap; popd; node_modules/opn/xdg-open http://localhost:8080/test"
+    "pretest": "mkdir -p js; [ -L js/node_modules ] || ln -s ../node_modules js",
+    "test": "tsc -p tsconfig-test.json; rollup -f esm -i js/test/src/all.js -o dist/all.js --sourcemap; node_modules/opn/xdg-open http://localhost:8080/test"
   },
   "devDependencies": {
     "@types/chai": "^4.1.6",

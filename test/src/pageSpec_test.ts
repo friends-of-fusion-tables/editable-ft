@@ -1,4 +1,4 @@
-import {currentPageSpec, hash, PageSpec, parsePageSpec, parseToCurrentPageSpec, whereClauses, WhereClauseSpec} from '../../js/pageSpec';
+import {currentPageSpec, hash, PageSpec, parsePageSpec, parseToCurrentPageSpec, whereClauses, WhereClauseSpec} from '../../src/pageSpec';
 
 describe('PageSpec', () => {
   it('parses its own hash',
